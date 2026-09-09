@@ -52,7 +52,14 @@ function LaunchContent({
   return (
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto max-w-5xl space-y-4">
-        <h1 className="text-2xl font-semibold">Site Audit</h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">Site Audit</h1>
+          <p className="max-w-2xl text-sm text-base-content/70">
+            Find the technical issues most likely to hold your site back, then
+            use the results to decide what to fix first. Start with a focused
+            crawl and expand it when you need a fuller picture.
+          </p>
+        </div>
 
         <LaunchFormCard
           launchForm={controller.launchForm}

@@ -20,7 +20,12 @@ export function LaunchFormCard({
   return (
     <div className="card bg-base-100 border border-base-300">
       <div className="card-body gap-4">
-        <h2 className="card-title text-base">Start New Audit</h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="card-title text-base">Start New Audit</h2>
+          <span className="text-xs text-base-content/60">
+            {maxPagesLimit.toLocaleString()} pages available on your plan
+          </span>
+        </div>
 
         <form
           className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-center"
