@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const dashboardHeroStepSchema = z.enum([
   "domain",
+  "audit",
   "mcp",
   "gsc",
   "competitor",

@@ -3,6 +3,7 @@ import type { DashboardHeroStep } from "@/types/schemas/dashboard";
 
 export const STEP_ORDER: DashboardHeroStep[] = [
   "domain",
+  "audit",
   "mcp",
   "gsc",
   "competitor",
@@ -19,6 +20,8 @@ export function isStepDone(
   switch (step) {
     case "domain":
       return activation.domain !== null;
+    case "audit":
+      return activation.audit.started;
     case "mcp":
       return (
         activation.mcp.authorizedAt !== null ||

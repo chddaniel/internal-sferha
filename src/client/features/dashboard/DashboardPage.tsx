@@ -36,6 +36,11 @@ const HERO_COPY: Record<
     body: "Set your project's domain and every card on this page starts working for it — backlinks and audits.",
     cta: "Save",
   },
+  audit: {
+    title: "Run your first site audit",
+    body: "Find broken links, missing tags and indexability problems before you spend time creating more content.",
+    cta: "Run audit",
+  },
   mcp: {
     title: "Connect your AI agent",
     body: "OpenSEO is built to be used from agents like Claude. Connect once, then ask it to use OpenSEO to help build your SEO strategy.",
@@ -130,11 +135,16 @@ function OnboardingChecklist({
     domainMutation.mutate(domain);
   };
 
-  // Only the gsc/competitor steps use the fallback CTA button — domain
+  // Only the audit/gsc/competitor steps use the fallback CTA button — domain
   // renders an inline form and mcp renders a Link.
   const onCta = () => {
     captureClientEvent("dashboard:next_move_click", { step });
-    if (step === "gsc") {
+    if (step === "audit") {
+      void navigate({
+        to: "/p/$projectId/audit",
+        params: { projectId },
+      });
+    } else if (step === "gsc") {
       scrollToCard("connect-gsc");
     } else if (step === "competitor") {
       competitorClickMutation.mutate();

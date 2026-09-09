@@ -20,6 +20,7 @@ const MAX_CONFIGS_FOR_OVERVIEW = 5;
 
 export type DashboardActivation = {
   domain: string | null;
+  audit: { started: boolean };
   gsc: { connected: boolean; siteUrl: string | null };
   mcp: {
     authorizedAt: string | null;
@@ -74,14 +75,17 @@ async function getActivation(input: {
   organizationId: string;
   domain: string | null;
 }): Promise<DashboardActivation> {
-  const [gsc, orgActivation, projectActivation] = await Promise.all([
-    GscConnectionRepository.getByProjectId(input.projectId),
-    ActivationRepository.getOrganizationActivation(input.organizationId),
-    ActivationRepository.getProjectActivation(input.projectId),
-  ]);
+  const [gsc, latestAudit, orgActivation, projectActivation] =
+    await Promise.all([
+      GscConnectionRepository.getByProjectId(input.projectId),
+      AuditRepository.getLatestAuditForProject(input.projectId),
+      ActivationRepository.getOrganizationActivation(input.organizationId),
+      ActivationRepository.getProjectActivation(input.projectId),
+    ]);
 
   return {
     domain: input.domain,
+    audit: { started: latestAudit !== null },
     gsc: { connected: gsc !== null, siteUrl: gsc?.siteUrl ?? null },
     mcp: {
       authorizedAt: orgActivation?.firstMcpAuthorizedAt ?? null,
