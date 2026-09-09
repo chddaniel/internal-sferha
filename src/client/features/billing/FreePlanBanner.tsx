@@ -75,7 +75,7 @@ export function FreePlanBanner() {
   if (isFreePlan) {
     return (
       <BannerShell variant="info">
-        We hope you&rsquo;re enjoying OpenSEO!{" "}
+        You have ${totalRemaining.toFixed(2)} in usage credits left this month.{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}
