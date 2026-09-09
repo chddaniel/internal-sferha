@@ -25,6 +25,7 @@ import {
 } from "@/serverFunctions/dashboard";
 import { setProjectDomain } from "@/serverFunctions/projects";
 import type { DashboardHeroStep } from "@/types/schemas/dashboard";
+import { isValidDomainHost, normalizeDomain } from "@/types/schemas/domain";
 
 const HERO_COPY: Record<
   DashboardHeroStep,
@@ -59,12 +60,13 @@ function scrollToCard(id: string) {
   });
 }
 
-// Users paste full URLs; store the bare host like settings expects.
-function normalizeDomainInput(value: string): string {
-  return value
-    .trim()
-    .replace(/^https?:\/\//i, "")
-    .replace(/\/.*$/, "");
+function parseDomainInput(value: string): string | null {
+  try {
+    const domain = normalizeDomain(value);
+    return isValidDomainHost(domain) ? domain : null;
+  } catch {
+    return null;
+  }
 }
 
 function OnboardingChecklist({
@@ -77,6 +79,7 @@ function OnboardingChecklist({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [domainInput, setDomainInput] = useState("");
+  const [domainError, setDomainError] = useState<string | null>(null);
   // null = follow the first actionable step; set once the user pages with ‹ ›.
   const [viewedIndex, setViewedIndex] = useState<number | null>(null);
   const invalidateActivation = () =>
@@ -117,8 +120,12 @@ function OnboardingChecklist({
     setViewedIndex(Math.min(Math.max(index + delta, 0), STEP_ORDER.length - 1));
 
   const onSubmitDomain = () => {
-    const domain = normalizeDomainInput(domainInput);
-    if (!domain) return;
+    const domain = parseDomainInput(domainInput);
+    if (!domain) {
+      setDomainError("Enter a valid domain like example.com");
+      return;
+    }
+    setDomainError(null);
     captureClientEvent("dashboard:next_move_click", { step: "domain" });
     domainMutation.mutate(domain);
   };
@@ -184,27 +191,36 @@ function OnboardingChecklist({
             </span>
           ) : step === "domain" ? (
             <form
-              className="join"
+              className="flex flex-wrap items-start gap-2"
               onSubmit={(event) => {
                 event.preventDefault();
                 onSubmitDomain();
               }}
             >
-              <input
-                type="text"
-                className="input input-bordered join-item w-52"
-                placeholder="acme.com"
-                value={domainInput}
-                onChange={(event) => setDomainInput(event.target.value)}
-                aria-label="Your site's domain"
-              />
+              <div className="flex flex-col gap-1">
+                <input
+                  type="text"
+                  className={`input input-bordered w-52 ${domainError ? "input-error" : ""}`}
+                  placeholder="acme.com"
+                  value={domainInput}
+                  onChange={(event) => {
+                    setDomainInput(event.target.value);
+                    if (domainError) setDomainError(null);
+                  }}
+                  aria-label="Your site's domain"
+                  aria-invalid={domainError ? true : undefined}
+                  aria-describedby={domainError ? "domain-error" : undefined}
+                />
+                {domainError ? (
+                  <span id="domain-error" className="text-xs text-error">
+                    {domainError}
+                  </span>
+                ) : null}
+              </div>
               <button
                 type="submit"
-                className="btn btn-primary join-item"
-                disabled={
-                  domainMutation.isPending ||
-                  normalizeDomainInput(domainInput) === ""
-                }
+                className="btn btn-primary"
+                disabled={domainMutation.isPending || domainInput.trim() === ""}
               >
                 {copy.cta}
               </button>
