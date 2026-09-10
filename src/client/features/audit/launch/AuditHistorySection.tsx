@@ -20,6 +20,10 @@ export function AuditHistorySection({
         <div className="text-center text-base-content/40 space-y-3">
           <ScanSearch className="size-12 mx-auto opacity-30" />
           <p className="text-lg font-medium">No audits yet</p>
+          <p className="mx-auto max-w-sm text-sm text-base-content/60">
+            Start your first crawl above to get a prioritized list of technical
+            issues to fix.
+          </p>
         </div>
       </div>
     );
