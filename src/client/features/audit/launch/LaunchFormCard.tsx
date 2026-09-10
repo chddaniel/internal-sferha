@@ -22,9 +22,19 @@ export function LaunchFormCard({
       <div className="card-body gap-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="card-title text-base">Start New Audit</h2>
-          <span className="text-xs text-base-content/60">
-            {maxPagesLimit.toLocaleString()} pages available on your plan
-          </span>
+          {maxPagesLimit < PAID_MAX_AUDIT_PAGES ? (
+            <Link
+              to={SUBSCRIBE_ROUTE}
+              search={{ upgrade: true }}
+              className="link link-primary text-xs"
+            >
+              {maxPagesLimit.toLocaleString()} pages available · Upgrade for more
+            </Link>
+          ) : (
+            <span className="text-xs text-base-content/60">
+              {maxPagesLimit.toLocaleString()} pages available on your plan
+            </span>
+          )}
         </div>
 
         <form
