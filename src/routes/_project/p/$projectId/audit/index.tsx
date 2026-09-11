@@ -184,6 +184,9 @@ function AuditDetail({
             data={resultsQuery.data}
             tab={tab}
             onTabChange={onTabChange}
+            onRerun={() =>
+              setSearchParams({ auditId: undefined, url: status.startUrl })
+            }
           />
         )}
       </div>

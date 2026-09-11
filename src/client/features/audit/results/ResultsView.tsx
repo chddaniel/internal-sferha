@@ -23,12 +23,14 @@ export function ResultsView({
   projectId,
   data,
   onTabChange,
+  onRerun,
   tab,
 }: {
   projectId: string;
   data: AuditResultsData;
   tab: string;
   onTabChange: (tab: ResultsTab) => void;
+  onRerun: () => void;
 }) {
   const { audit, pages, lighthouse, issues } = data;
   const hasPerformanceTab = lighthouse.length > 0;
@@ -77,6 +79,7 @@ export function ResultsView({
             hasPerformanceTab={hasPerformanceTab}
             activeTab={activeTab}
             onTabChange={onTabChange}
+            onRerun={onRerun}
             onExport={(format) => {
               if (activeTab === "performance") {
                 exportPerformance(lighthouse, pages, format);
@@ -163,6 +166,7 @@ function ResultsHeader({
   hasPerformanceTab,
   activeTab,
   onTabChange,
+  onRerun,
   onExport,
 }: {
   issueCount: number;
@@ -171,6 +175,7 @@ function ResultsHeader({
   hasPerformanceTab: boolean;
   activeTab: string;
   onTabChange: (tab: ResultsTab) => void;
+  onRerun: () => void;
   onExport: (format: "csv" | "json" | "sheets") => void;
 }) {
   const tabs: Array<{ tab: ResultsTab; label: string }> = [
@@ -207,7 +212,12 @@ function ResultsHeader({
         })}
       </div>
 
-      <ExportDropdown onExport={onExport} />
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" className="btn btn-outline btn-sm" onClick={onRerun}>
+          Rerun audit
+        </button>
+        <ExportDropdown onExport={onExport} />
+      </div>
     </div>
   );
 }
