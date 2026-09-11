@@ -143,6 +143,9 @@ function OnboardingChecklist({
       void navigate({
         to: "/p/$projectId/audit",
         params: { projectId },
+        search: activation.domain
+          ? { url: `https://${activation.domain}` }
+          : undefined,
       });
     } else if (step === "gsc") {
       scrollToCard("connect-gsc");

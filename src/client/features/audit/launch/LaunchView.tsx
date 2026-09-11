@@ -8,6 +8,7 @@ import { isHostedClientAuthMode } from "@/lib/auth-mode";
 
 type LaunchViewProps = {
   projectId: string;
+  initialUrl?: string;
   onAuditStarted: (auditId: string) => void;
 };
 
@@ -41,11 +42,13 @@ function HostedLaunchView(props: LaunchViewProps) {
 function LaunchContent({
   projectId,
   isFreePlan,
+  initialUrl,
   onAuditStarted,
 }: LaunchViewProps & { isFreePlan: boolean }) {
   const controller = useLaunchController({
     projectId,
     isFreePlan,
+    initialUrl,
     onAuditStarted,
   });
 

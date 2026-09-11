@@ -7,8 +7,8 @@ import {
   startAudit,
 } from "@/serverFunctions/audit";
 import {
-  DEFAULT_LAUNCH_FORM_VALUES,
   getMaxPagesLimit,
+  getLaunchFormValues,
   MIN_PAGES,
   type LaunchFormValues,
 } from "@/client/features/audit/launch/types";
@@ -40,10 +40,12 @@ function getLaunchValidationErrors(
 export function useLaunchController({
   projectId,
   isFreePlan,
+  initialUrl,
   onAuditStarted,
 }: {
   projectId: string;
   isFreePlan: boolean;
+  initialUrl?: string;
   onAuditStarted: (auditId: string) => void;
 }) {
   const maxPagesLimit = getMaxPagesLimit(isFreePlan);
@@ -57,7 +59,7 @@ export function useLaunchController({
   });
 
   const launchForm = useForm({
-    defaultValues: DEFAULT_LAUNCH_FORM_VALUES,
+    defaultValues: getLaunchFormValues(initialUrl),
     validators: {
       onChange: ({ formApi, value }) =>
         getLaunchValidationErrors(

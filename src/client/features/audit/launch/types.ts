@@ -22,3 +22,10 @@ export const DEFAULT_LAUNCH_FORM_VALUES: LaunchFormValues = {
   maxPagesInput: String(DEFAULT_AUDIT_PAGES),
   runLighthouse: false,
 };
+
+export function getLaunchFormValues(initialUrl?: string): LaunchFormValues {
+  return {
+    ...DEFAULT_LAUNCH_FORM_VALUES,
+    url: initialUrl ?? "",
+  };
+}
