@@ -24,6 +24,9 @@ export function AuditHistorySection({
             Start your first crawl above to get a prioritized list of technical
             issues to fix.
           </p>
+          <a href="#audit-launch-url" className="link link-primary text-sm">
+            Start your first audit
+          </a>
         </div>
       </div>
     );

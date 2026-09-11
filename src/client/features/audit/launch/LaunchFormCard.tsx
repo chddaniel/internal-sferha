@@ -53,6 +53,7 @@ export function LaunchFormCard({
                   className={`input input-bordered w-full lg:col-span-9 ${urlError ? "input-error" : ""}`}
                 >
                   <input
+                    id="audit-launch-url"
                     placeholder="https://example.com"
                     value={field.state.value}
                     onChange={(event) => {
