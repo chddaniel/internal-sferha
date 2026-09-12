@@ -39,6 +39,8 @@ type DashboardRankSummary = {
 };
 
 export type DashboardAuditSummary = {
+  id: string;
+  startUrl: string;
   status: "running" | "completed" | "failed";
   pagesCrawled: number;
   startedAt: string;
@@ -174,6 +176,8 @@ async function getAuditSummary(
     );
 
   return {
+    id: audit.id,
+    startUrl: audit.startUrl,
     status: audit.status,
     pagesCrawled: audit.pagesCrawled,
     startedAt: audit.startedAt,

@@ -3,6 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { SearchConsoleConnectionCard } from "@/client/features/gsc/SearchConsoleConnectionCard";
 import { AUDIT_ISSUE_TYPES } from "@/shared/audit-issues";
+import {
+  getAuditRerunSearch,
+  getAuditReviewSearch,
+} from "@/client/features/dashboard/dashboardAuditActions";
 
 import {
   formatCount,
@@ -155,9 +159,10 @@ export function AuditHealthCard({
         <Link
           to="/p/$projectId/audit"
           params={{ projectId }}
+          search={getAuditReviewSearch(audit)}
           className={moreDetailsClass}
         >
-          More details
+          {audit.status === "running" ? "View progress" : "Review audit"}
         </Link>
       }
     >
@@ -200,6 +205,18 @@ export function AuditHealthCard({
           ) : null}
         </ul>
       )}
+      {audit.status !== "running" ? (
+        <div className="mt-4">
+          <Link
+            to="/p/$projectId/audit"
+            params={{ projectId }}
+            search={getAuditRerunSearch(audit)}
+            className="btn btn-outline btn-sm"
+          >
+            Run this audit again
+          </Link>
+        </div>
+      ) : null}
     </CardShell>
   );
 }
