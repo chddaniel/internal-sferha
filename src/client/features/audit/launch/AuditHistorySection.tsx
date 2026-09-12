@@ -8,11 +8,13 @@ export function AuditHistorySection({
   history,
   isLoading,
   onDelete,
+  onRerun,
 }: {
   projectId: string;
   history: Awaited<ReturnType<typeof getAuditHistory>>;
   isLoading: boolean;
   onDelete: (auditId: string) => void;
+  onRerun: (startUrl: string) => void;
 }) {
   if (history.length === 0 && !isLoading) {
     return (
@@ -70,7 +72,9 @@ export function AuditHistorySection({
                     <HistoryActions
                       projectId={projectId}
                       auditId={audit.id}
+                      startUrl={audit.startUrl}
                       onDelete={onDelete}
+                      onRerun={onRerun}
                     />
                   </td>
                 </tr>
@@ -86,11 +90,15 @@ export function AuditHistorySection({
 function HistoryActions({
   projectId,
   auditId,
+  startUrl,
   onDelete,
+  onRerun,
 }: {
   projectId: string;
   auditId: string;
+  startUrl: string;
   onDelete: (auditId: string) => void;
+  onRerun: (startUrl: string) => void;
 }) {
   return (
     <div className="flex items-center justify-end gap-2 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
@@ -102,6 +110,13 @@ function HistoryActions({
       >
         View
       </Link>
+      <button
+        type="button"
+        className="btn btn-outline btn-xs"
+        onClick={() => onRerun(startUrl)}
+      >
+        Rerun
+      </button>
       <div className="dropdown dropdown-end">
         <div
           tabIndex={0}

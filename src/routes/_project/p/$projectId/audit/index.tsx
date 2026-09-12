@@ -48,6 +48,7 @@ function SiteAuditPage() {
         projectId={projectId}
         initialUrl={url}
         onAuditStarted={(id) => setSearchParams({ auditId: id })}
+        onRerun={(startUrl) => setSearchParams({ url: startUrl })}
       />
     );
   }

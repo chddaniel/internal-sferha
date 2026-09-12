@@ -10,6 +10,7 @@ type LaunchViewProps = {
   projectId: string;
   initialUrl?: string;
   onAuditStarted: (auditId: string) => void;
+  onRerun: (startUrl: string) => void;
 };
 
 export function LaunchView(props: LaunchViewProps) {
@@ -75,6 +76,7 @@ function LaunchContent({
           history={controller.historyQuery.data ?? []}
           isLoading={controller.historyQuery.isLoading}
           onDelete={controller.deleteAudit}
+          onRerun={onRerun}
         />
       </div>
     </div>
