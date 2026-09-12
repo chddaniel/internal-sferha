@@ -17,6 +17,7 @@ import {
   HttpStatusBadge,
   StatusBadge,
   SUPPORT_URL,
+  shouldOfferAuditRetry,
 } from "@/client/features/audit/shared";
 
 export const Route = createFileRoute<"/_project/p/$projectId/audit/">(
@@ -57,6 +58,7 @@ function SiteAuditPage() {
       auditId={auditId}
       tab={tab}
       onBack={() => setSearchParams({ auditId: undefined })}
+      onRerun={(startUrl) => setSearchParams({ auditId: undefined, url: startUrl })}
       onTabChange={(nextTab) => setSearchParams({ tab: nextTab })}
     />
   );
@@ -67,12 +69,14 @@ function AuditDetail({
   auditId,
   tab,
   onBack,
+  onRerun,
   onTabChange,
 }: {
   projectId: string;
   auditId: string;
   tab: string;
   onBack: () => void;
+  onRerun: (startUrl: string) => void;
   onTabChange: (tab: "issues" | "pages" | "performance") => void;
 }) {
   const statusQuery = useQuery({
@@ -121,6 +125,7 @@ function AuditDetail({
   const status = statusQuery.data;
   const showSupportCta =
     isFailed || (isComplete && status && status.pagesCrawled <= 1);
+  const showRetryCta = isFailed && status && shouldOfferAuditRetry(status.status);
 
   return (
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
@@ -174,6 +179,15 @@ function AuditDetail({
                 </a>{" "}
                 and we'll help configure auditing for your site.
               </p>
+              {showRetryCta && (
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm mt-2"
+                  onClick={() => onRerun(status.startUrl)}
+                >
+                  Try this audit again
+                </button>
+              )}
             </div>
           </div>
         )}
