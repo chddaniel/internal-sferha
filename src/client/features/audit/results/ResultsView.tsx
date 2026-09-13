@@ -16,6 +16,8 @@ import {
   ExportDropdown,
   PerformanceTable,
 } from "@/client/features/audit/results/ResultsTables";
+import { captureClientEvent } from "@/client/lib/posthog";
+import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
 
 type ResultsTab = "issues" | "pages" | "performance";
 
@@ -81,6 +83,10 @@ export function ResultsView({
             onTabChange={onTabChange}
             onRerun={onRerun}
             onExport={(format) => {
+              captureClientEvent(AUDIT_EVENTS.resultExported, {
+                format,
+                tab: activeTab,
+              });
               if (activeTab === "performance") {
                 exportPerformance(lighthouse, pages, format);
                 return;

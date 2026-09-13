@@ -19,6 +19,11 @@ import {
   SUPPORT_URL,
   shouldOfferAuditRetry,
 } from "@/client/features/audit/shared";
+import { captureClientEvent } from "@/client/lib/posthog";
+import {
+  AUDIT_EVENTS,
+  auditResultTab,
+} from "@/client/features/audit/auditAnalytics";
 
 export const Route = createFileRoute<"/_project/p/$projectId/audit/">(
   "/_project/p/$projectId/audit/",
@@ -198,10 +203,16 @@ function AuditDetail({
             projectId={projectId}
             data={resultsQuery.data}
             tab={tab}
-            onTabChange={onTabChange}
-            onRerun={() =>
-              setSearchParams({ auditId: undefined, url: status.startUrl })
-            }
+            onTabChange={(nextTab) => {
+              captureClientEvent(AUDIT_EVENTS.resultTabViewed, {
+                tab: auditResultTab(nextTab),
+              });
+              onTabChange(nextTab);
+            }}
+            onRerun={() => {
+              captureClientEvent(AUDIT_EVENTS.rerunStarted);
+              setSearchParams({ auditId: undefined, url: status.startUrl });
+            }}
           />
         )}
       </div>

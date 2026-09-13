@@ -17,6 +17,8 @@ import {
   shouldValidateFieldOnChange,
 } from "@/client/lib/forms";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { captureClientEvent } from "@/client/lib/posthog";
+import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
 
 function getLaunchValidationErrors(
   value: LaunchFormValues,
@@ -89,6 +91,10 @@ export function useLaunchController({
           lighthouseStrategy: value.runLighthouse ? "auto" : "none",
         });
         toast.success("Audit started!");
+        captureClientEvent(AUDIT_EVENTS.started, {
+          max_pages: effectiveMaxPages,
+          lighthouse: value.runLighthouse,
+        });
         onAuditStarted(result.auditId);
       } catch (error) {
         formApi.setErrorMap({
