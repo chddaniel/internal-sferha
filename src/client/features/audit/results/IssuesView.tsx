@@ -6,6 +6,8 @@ import {
   type IssueSeverity,
 } from "@/shared/audit-issues";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
+import { captureClientEvent } from "@/client/lib/posthog";
+import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
 
 type AuditIssueRow = AuditResultsData["issues"][number];
 
@@ -36,6 +38,17 @@ interface IssueGroup {
   explanation: string;
   howToFix: string;
   issues: AuditIssueRow[];
+}
+
+type IssueFilter = "all" | IssueSeverity;
+
+export function filterIssueGroups(
+  groups: IssueGroup[],
+  filter: IssueFilter,
+): IssueGroup[] {
+  return filter === "all"
+    ? groups
+    : groups.filter((group) => group.severity === filter);
 }
 
 export function resolveIssueSeverity(issue: {
@@ -76,17 +89,24 @@ function groupIssues(issues: AuditIssueRow[]): IssueGroup[] {
 }
 
 export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
+  const [filter, setFilter] = useState<IssueFilter>("all");
   const groups = useMemo(() => groupIssues(issues), [issues]);
+  const filteredGroups = useMemo(
+    () => filterIssueGroups(groups, filter),
+    [filter, groups],
+  );
 
   const sections = useMemo(
     () =>
       (["critical", "warning", "info"] as const)
         .map((severity) => ({
           severity,
-          groups: groups.filter((group) => group.severity === severity),
+          groups: filteredGroups.filter(
+            (group) => group.severity === severity,
+          ),
         }))
         .filter((section) => section.groups.length > 0),
-    [groups],
+    [filteredGroups],
   );
 
   if (issues.length === 0) {
@@ -102,10 +122,39 @@ export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
   }
 
   return (
-    <div className="border border-base-300 rounded-lg overflow-hidden">
-      {sections.map((section) => (
-        <IssueSection key={section.severity} section={section} />
-      ))}
+    <div className="space-y-3">
+      <div
+        className="flex flex-wrap items-center gap-2"
+        role="group"
+        aria-label="Filter issues by severity"
+      >
+        {(["all", "critical", "warning", "info"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={`btn btn-xs ${filter === option ? "btn-primary" : "btn-ghost"}`}
+            aria-pressed={filter === option}
+            onClick={() => {
+              setFilter(option);
+              captureClientEvent(AUDIT_EVENTS.issueSeverityFiltered, {
+                severity: option,
+              });
+            }}
+          >
+            {option === "all" ? "All issues" : SEVERITY_LABEL[option]}
+          </button>
+        ))}
+        {filter !== "all" && filteredGroups.length === 0 && (
+          <span className="text-xs text-base-content/50">
+            No {filter} issues in this audit.
+          </span>
+        )}
+      </div>
+      <div className="border border-base-300 rounded-lg overflow-hidden">
+        {sections.map((section) => (
+          <IssueSection key={section.severity} section={section} />
+        ))}
+      </div>
     </div>
   );
 }

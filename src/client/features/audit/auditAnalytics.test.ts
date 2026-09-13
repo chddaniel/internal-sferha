@@ -8,6 +8,7 @@ describe("audit analytics contract", () => {
       rerunStarted: "audit:rerun_started",
       resultTabViewed: "audit:result_tab_viewed",
       resultExported: "audit:result_exported",
+      issueSeverityFiltered: "audit:issue_severity_filtered",
     });
   });
 
