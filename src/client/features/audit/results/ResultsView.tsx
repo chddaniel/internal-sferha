@@ -11,6 +11,7 @@ import {
   IssuesView,
   resolveIssueSeverity,
 } from "@/client/features/audit/results/IssuesView";
+import { filterIssueRows } from "@/client/features/audit/results/IssueFilterLogic";
 import { PagesTable } from "@/client/features/audit/results/PagesTable";
 import {
   ExportDropdown,
@@ -97,7 +98,7 @@ export function ResultsView({
                 return;
               }
               if (activeTab === "issues") {
-                exportIssues(issues, format);
+                exportIssues(filterIssueRows(issues, issueFilter), format);
                 return;
               }
               exportPages(pages, format);

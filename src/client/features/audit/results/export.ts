@@ -1,5 +1,6 @@
 import type { AuditResultsData } from "@/client/features/audit/results/types";
 import { getIssueDescriptor } from "@/shared/audit-issues";
+import { resolveIssueSeverity } from "@/client/features/audit/results/IssueFilterLogic";
 import { buildCsv, type CsvValue, downloadCsv } from "@/client/lib/csv";
 import { downloadFile } from "@/client/lib/download";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
@@ -10,7 +11,7 @@ function issuesRows(issues: AuditResultsData["issues"]): CsvValue[][] {
   return issues.map((issue) => {
     const descriptor = getIssueDescriptor(issue.issueType);
     return [
-      issue.severity,
+      resolveIssueSeverity(issue),
       descriptor?.title ?? issue.issueType,
       issue.pageUrl,
       issue.detailsJson ?? "",
@@ -27,7 +28,7 @@ export function exportIssues(
     const rows = issues.map((issue) => {
       const descriptor = getIssueDescriptor(issue.issueType);
       return {
-        severity: issue.severity,
+        severity: resolveIssueSeverity(issue),
         issueType: issue.issueType,
         issue: descriptor?.title ?? issue.issueType,
         url: issue.pageUrl,

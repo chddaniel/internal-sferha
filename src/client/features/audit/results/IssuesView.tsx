@@ -8,6 +8,17 @@ import {
 import type { AuditResultsData } from "@/client/features/audit/results/types";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
+import {
+  filterIssueRows,
+  resolveIssueSeverity,
+  type IssueFilter,
+} from "@/client/features/audit/results/IssueFilterLogic";
+
+export {
+  filterIssueRows,
+  resolveIssueSeverity,
+  type IssueFilter,
+} from "@/client/features/audit/results/IssueFilterLogic";
 
 type AuditIssueRow = AuditResultsData["issues"][number];
 
@@ -40,8 +51,6 @@ interface IssueGroup {
   issues: AuditIssueRow[];
 }
 
-export type IssueFilter = "all" | IssueSeverity;
-
 export function filterIssueGroups(
   groups: IssueGroup[],
   filter: IssueFilter,
@@ -49,17 +58,6 @@ export function filterIssueGroups(
   return filter === "all"
     ? groups
     : groups.filter((group) => group.severity === filter);
-}
-
-export function resolveIssueSeverity(issue: {
-  issueType: string;
-  severity: string;
-}): IssueSeverity {
-  const descriptor = getIssueDescriptor(issue.issueType);
-  if (descriptor) return descriptor.severity;
-  return issue.severity === "critical" || issue.severity === "warning"
-    ? issue.severity
-    : "info";
 }
 
 function groupIssues(issues: AuditIssueRow[]): IssueGroup[] {
@@ -88,7 +86,11 @@ function groupIssues(issues: AuditIssueRow[]): IssueGroup[] {
   );
 }
 
-export function IssuesView({ issues, filter = "all", onFilterChange }: {
+export function IssuesView({
+  issues,
+  filter = "all",
+  onFilterChange,
+}: {
   issues: AuditIssueRow[];
   filter?: IssueFilter;
   onFilterChange?: (filter: IssueFilter) => void;
