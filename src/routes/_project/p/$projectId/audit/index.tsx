@@ -24,6 +24,7 @@ import {
   AUDIT_EVENTS,
   auditResultTab,
 } from "@/client/features/audit/auditAnalytics";
+import type { IssueFilter } from "@/client/features/audit/results/IssuesView";
 
 export const Route = createFileRoute<"/_project/p/$projectId/audit/">(
   "/_project/p/$projectId/audit/",
@@ -34,7 +35,7 @@ export const Route = createFileRoute<"/_project/p/$projectId/audit/">(
 
 function SiteAuditPage() {
   const { projectId } = Route.useParams();
-  const { auditId, tab, url } = Route.useSearch();
+  const { auditId, tab, url, severity } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
   const setSearchParams = useCallback(
@@ -66,6 +67,12 @@ function SiteAuditPage() {
       onBack={() => setSearchParams({ auditId: undefined })}
       onRerun={(startUrl) => setSearchParams({ auditId: undefined, url: startUrl })}
       onTabChange={(nextTab) => setSearchParams({ tab: nextTab })}
+      issueFilter={severity}
+      onIssueFilterChange={(nextSeverity) =>
+        setSearchParams({
+          severity: nextSeverity === "all" ? undefined : nextSeverity,
+        })
+      }
     />
   );
 }
@@ -77,6 +84,8 @@ function AuditDetail({
   onBack,
   onRerun,
   onTabChange,
+  issueFilter,
+  onIssueFilterChange,
 }: {
   projectId: string;
   auditId: string;
@@ -84,6 +93,8 @@ function AuditDetail({
   onBack: () => void;
   onRerun: (startUrl: string) => void;
   onTabChange: (tab: "issues" | "pages" | "performance") => void;
+  issueFilter: IssueFilter;
+  onIssueFilterChange: (filter: IssueFilter) => void;
 }) {
   const statusQuery = useQuery({
     queryKey: ["audit-status", projectId, auditId],
@@ -213,6 +224,8 @@ function AuditDetail({
               captureClientEvent(AUDIT_EVENTS.rerunStarted);
               setSearchParams({ auditId: undefined, url: status.startUrl });
             }}
+            issueFilter={issueFilter}
+            onIssueFilterChange={onIssueFilterChange}
           />
         )}
       </div>

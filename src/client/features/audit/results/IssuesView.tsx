@@ -40,7 +40,7 @@ interface IssueGroup {
   issues: AuditIssueRow[];
 }
 
-type IssueFilter = "all" | IssueSeverity;
+export type IssueFilter = "all" | IssueSeverity;
 
 export function filterIssueGroups(
   groups: IssueGroup[],
@@ -88,12 +88,17 @@ function groupIssues(issues: AuditIssueRow[]): IssueGroup[] {
   );
 }
 
-export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
-  const [filter, setFilter] = useState<IssueFilter>("all");
+export function IssuesView({ issues, filter = "all", onFilterChange }: {
+  issues: AuditIssueRow[];
+  filter?: IssueFilter;
+  onFilterChange?: (filter: IssueFilter) => void;
+}) {
+  const [localFilter, setLocalFilter] = useState<IssueFilter>(filter);
+  const activeFilter = onFilterChange ? filter : localFilter;
   const groups = useMemo(() => groupIssues(issues), [issues]);
   const filteredGroups = useMemo(
-    () => filterIssueGroups(groups, filter),
-    [filter, groups],
+    () => filterIssueGroups(groups, activeFilter),
+    [activeFilter, groups],
   );
 
   const sections = useMemo(
@@ -132,10 +137,11 @@ export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
           <button
             key={option}
             type="button"
-            className={`btn btn-xs ${filter === option ? "btn-primary" : "btn-ghost"}`}
-            aria-pressed={filter === option}
+            className={`btn btn-xs ${activeFilter === option ? "btn-primary" : "btn-ghost"}`}
+            aria-pressed={activeFilter === option}
             onClick={() => {
-              setFilter(option);
+              setLocalFilter(option);
+              onFilterChange?.(option);
               captureClientEvent(AUDIT_EVENTS.issueSeverityFiltered, {
                 severity: option,
               });
@@ -144,9 +150,9 @@ export function IssuesView({ issues }: { issues: AuditIssueRow[] }) {
             {option === "all" ? "All issues" : SEVERITY_LABEL[option]}
           </button>
         ))}
-        {filter !== "all" && filteredGroups.length === 0 && (
+        {activeFilter !== "all" && filteredGroups.length === 0 && (
           <span className="text-xs text-base-content/50">
-            No {filter} issues in this audit.
+            No {activeFilter} issues in this audit.
           </span>
         )}
       </div>

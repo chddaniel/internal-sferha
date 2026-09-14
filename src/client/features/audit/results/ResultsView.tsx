@@ -18,6 +18,7 @@ import {
 } from "@/client/features/audit/results/ResultsTables";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
+import type { IssueFilter } from "@/client/features/audit/results/IssuesView";
 
 type ResultsTab = "issues" | "pages" | "performance";
 
@@ -26,6 +27,8 @@ export function ResultsView({
   data,
   onTabChange,
   onRerun,
+  issueFilter,
+  onIssueFilterChange,
   tab,
 }: {
   projectId: string;
@@ -33,6 +36,8 @@ export function ResultsView({
   tab: string;
   onTabChange: (tab: ResultsTab) => void;
   onRerun: () => void;
+  issueFilter: IssueFilter;
+  onIssueFilterChange: (filter: IssueFilter) => void;
 }) {
   const { audit, pages, lighthouse, issues } = data;
   const hasPerformanceTab = lighthouse.length > 0;
@@ -99,7 +104,13 @@ export function ResultsView({
             }}
           />
 
-          {activeTab === "issues" && <IssuesView issues={issues} />}
+          {activeTab === "issues" && (
+            <IssuesView
+              issues={issues}
+              filter={issueFilter}
+              onFilterChange={onIssueFilterChange}
+            />
+          )}
           {activeTab === "pages" && (
             <PagesTable
               pages={pages}

@@ -47,9 +47,11 @@ export const getCrawlProgressSchema = z.object({
 // ─── URL search params schema for /p/$projectId/audit ────────────────────────
 
 const auditTabs = ["issues", "pages", "performance"] as const;
+const auditIssueSeverities = ["all", "critical", "warning", "info"] as const;
 
 export const auditSearchSchema = z.object({
   auditId: z.string().optional().catch(undefined),
   url: z.string().max(2048).optional().catch(undefined),
   tab: z.enum(auditTabs).catch("issues").default("issues"),
+  severity: z.enum(auditIssueSeverities).catch("all").default("all"),
 });
