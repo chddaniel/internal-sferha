@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from "react";
-import { ShieldAlert } from "lucide-react";
+import { Link2, ShieldAlert } from "lucide-react";
+import { toast } from "sonner";
 import {
   exportIssues,
   exportPages,
@@ -18,6 +19,7 @@ import {
   PerformanceTable,
 } from "@/client/features/audit/results/ResultsTables";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
 import type { IssueFilter } from "@/client/features/audit/results/IssuesView";
 
@@ -49,6 +51,15 @@ export function ResultsView({
     () => pages.filter((page) => page.fetchClass === "blocked").length,
     [pages],
   );
+  const copyResultLink = async () => {
+    try {
+      await copyTextToClipboard(window.location.href);
+      captureClientEvent(AUDIT_EVENTS.resultLinkCopied, { tab: activeTab });
+      toast.success("Audit link copied");
+    } catch {
+      toast.error("Could not copy audit link");
+    }
+  };
 
   return (
     <>
@@ -88,6 +99,7 @@ export function ResultsView({
             activeTab={activeTab}
             onTabChange={onTabChange}
             onRerun={onRerun}
+            onCopyLink={() => void copyResultLink()}
             onExport={(format) => {
               captureClientEvent(AUDIT_EVENTS.resultExported, {
                 format,
@@ -185,6 +197,7 @@ function ResultsHeader({
   activeTab,
   onTabChange,
   onRerun,
+  onCopyLink,
   onExport,
 }: {
   issueCount: number;
@@ -194,6 +207,7 @@ function ResultsHeader({
   activeTab: string;
   onTabChange: (tab: ResultsTab) => void;
   onRerun: () => void;
+  onCopyLink: () => void;
   onExport: (format: "csv" | "json" | "sheets") => void;
 }) {
   const tabs: Array<{ tab: ResultsTab; label: string }> = [
@@ -233,6 +247,14 @@ function ResultsHeader({
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className="btn btn-outline btn-sm" onClick={onRerun}>
           Rerun audit
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm gap-1.5"
+          onClick={onCopyLink}
+        >
+          <Link2 className="size-3.5" />
+          Copy link
         </button>
         <ExportDropdown onExport={onExport} />
       </div>

@@ -2,6 +2,14 @@ import { normalizeExportValue, type CsvValue, type ExportValue } from "./csv";
 
 export const GOOGLE_SHEETS_NEW_URL = "https://sheets.new";
 
+export async function copyTextToClipboard(value: string): Promise<void> {
+  if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+    throw new Error("Clipboard API not available in this browser.");
+  }
+
+  await navigator.clipboard.writeText(value);
+}
+
 export async function copyTableToClipboard(
   headers: string[],
   rows: CsvValue[][],

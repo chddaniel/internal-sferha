@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { copyTableToClipboard } from "./clipboard";
+import { copyTableToClipboard, copyTextToClipboard } from "./clipboard";
 
 type WrittenItem = {
   plain: string;
@@ -106,6 +106,17 @@ describe("copyTableToClipboard", () => {
     vi.stubGlobal("navigator", {});
     await expect(copyTableToClipboard(["X"], [["y"]])).rejects.toThrow(
       /Clipboard API not available/,
+    );
+  });
+
+  it("copies a plain text audit link", async () => {
+    const writeText = vi.fn(async () => undefined);
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+
+    await copyTextToClipboard("https://app.example.com/audit?auditId=123");
+
+    expect(writeText).toHaveBeenCalledWith(
+      "https://app.example.com/audit?auditId=123",
     );
   });
 });
