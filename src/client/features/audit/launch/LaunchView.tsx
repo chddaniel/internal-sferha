@@ -45,6 +45,7 @@ function LaunchContent({
   isFreePlan,
   initialUrl,
   onAuditStarted,
+  onRerun,
 }: LaunchViewProps & { isFreePlan: boolean }) {
   const controller = useLaunchController({
     projectId,
