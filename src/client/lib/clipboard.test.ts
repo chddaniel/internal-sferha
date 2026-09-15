@@ -119,4 +119,24 @@ describe("copyTableToClipboard", () => {
       "https://app.example.com/audit?auditId=123",
     );
   });
+
+  it("falls back to document copy when the Clipboard API is unavailable", async () => {
+    vi.stubGlobal("navigator", {});
+    const execCommand = vi.fn(() => true);
+    vi.stubGlobal("document", {
+      body: { appendChild: vi.fn() },
+      createElement: vi.fn(() => ({
+        value: "",
+        setAttribute: vi.fn(),
+        style: {},
+        select: vi.fn(),
+        remove: vi.fn(),
+      })),
+      execCommand,
+    });
+
+    await copyTextToClipboard("https://app.example.com/audit?auditId=456");
+
+    expect(execCommand).toHaveBeenCalledWith("copy");
+  });
 });

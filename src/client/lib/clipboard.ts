@@ -3,11 +3,30 @@ import { normalizeExportValue, type CsvValue, type ExportValue } from "./csv";
 export const GOOGLE_SHEETS_NEW_URL = "https://sheets.new";
 
 export async function copyTextToClipboard(value: string): Promise<void> {
-  if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  if (typeof document === "undefined") {
     throw new Error("Clipboard API not available in this browser.");
   }
 
-  await navigator.clipboard.writeText(value);
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("Clipboard copy failed.");
+    }
+  } finally {
+    textarea.remove();
+  }
 }
 
 export async function copyTableToClipboard(
