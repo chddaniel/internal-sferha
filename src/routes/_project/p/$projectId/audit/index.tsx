@@ -209,7 +209,7 @@ function AuditDetail({
           </div>
         )}
 
-        {isComplete && resultsQuery.data && (
+        {isComplete && status && resultsQuery.data && (
           <ResultsView
             projectId={projectId}
             data={resultsQuery.data}
@@ -222,7 +222,7 @@ function AuditDetail({
             }}
             onRerun={() => {
               captureClientEvent(AUDIT_EVENTS.rerunStarted);
-              setSearchParams({ auditId: undefined, url: status.startUrl });
+              onRerun(status.startUrl);
             }}
             issueFilter={issueFilter}
             onIssueFilterChange={onIssueFilterChange}
