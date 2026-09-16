@@ -1,7 +1,22 @@
 import { Link } from "@tanstack/react-router";
-import { MoreHorizontal, ScanSearch, Trash2 } from "lucide-react";
+import { Link2, MoreHorizontal, ScanSearch, Trash2 } from "lucide-react";
 import type { getAuditHistory } from "@/serverFunctions/audit";
 import { formatDate, StatusBadge } from "@/client/features/audit/shared";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
+import { captureClientEvent } from "@/client/lib/posthog";
+import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
+import { toast } from "sonner";
+
+export function buildAuditReviewUrl(
+  currentUrl: string,
+  auditId: string,
+  tab: "issues" | "pages" | "performance" = "pages",
+): string {
+  const url = new URL(currentUrl);
+  url.search = new URLSearchParams({ auditId, tab }).toString();
+  url.hash = "";
+  return url.toString();
+}
 
 export function AuditHistorySection({
   projectId,
@@ -130,6 +145,25 @@ function HistoryActions({
           tabIndex={0}
           className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-40"
         >
+          <li>
+            <button
+              onClick={() => {
+                const url = buildAuditReviewUrl(window.location.href, auditId);
+                void copyTextToClipboard(url)
+                  .then(() => {
+                    captureClientEvent(AUDIT_EVENTS.resultLinkCopied, {
+                      tab: "pages",
+                      source: "audit_history",
+                    });
+                    toast.success("Audit link copied");
+                  })
+                  .catch(() => toast.error("Could not copy audit link"));
+              }}
+            >
+              <Link2 className="size-3.5" />
+              Copy link
+            </button>
+          </li>
           <li>
             <button
               className="text-error"
