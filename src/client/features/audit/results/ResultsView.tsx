@@ -7,7 +7,10 @@ import {
   exportPerformance,
 } from "@/client/features/audit/results/export";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
-import { isLighthouseFailure } from "@/client/features/audit/results/AuditResultsTableFilterLogic";
+import {
+  averageResponseTimeMs,
+  isLighthouseFailure,
+} from "@/client/features/audit/results/AuditResultsTableFilterLogic";
 import {
   IssuesView,
   resolveIssueSeverity,
@@ -149,15 +152,7 @@ function useResultStats(
   pages: AuditResultsData["pages"],
   lighthouse: AuditResultsData["lighthouse"],
 ) {
-  const averageResponseMs = useMemo(() => {
-    if (pages.length === 0) return 0;
-    const total = pages.reduce(
-      (sum: number, page: AuditResultsData["pages"][number]) =>
-        sum + (page.responseTimeMs ?? 0),
-      0,
-    );
-    return Math.round(total / pages.length);
-  }, [pages]);
+  const averageResponseMs = useMemo(() => averageResponseTimeMs(pages), [pages]);
 
   const lighthouseSummary = useMemo(() => {
     const failed = lighthouse.filter(
@@ -279,7 +274,7 @@ function StatsStrip({
   pagesCrawled: number;
   issues: AuditResultsData["issues"];
   totalLighthouse: number;
-  averageResponseMs: number;
+  averageResponseMs: number | null;
   lighthouseSummary: {
     failed: number;
     avgPerformance: number | null;
@@ -312,7 +307,10 @@ function StatsStrip({
         </span>
       ),
     },
-    { label: "Avg response", value: `${averageResponseMs}ms` },
+    {
+      label: "Avg response",
+      value: averageResponseMs == null ? "-" : `${averageResponseMs}ms`,
+    },
   ];
 
   if (totalLighthouse > 0) {

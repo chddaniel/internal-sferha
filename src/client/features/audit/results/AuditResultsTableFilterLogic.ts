@@ -135,6 +135,18 @@ export function filterPerformanceRows(
   });
 }
 
+export function averageResponseTimeMs(
+  rows: Pick<PageRow, "responseTimeMs">[],
+): number | null {
+  const measured = rows
+    .map((row) => row.responseTimeMs)
+    .filter((value): value is number => value != null);
+  if (measured.length === 0) return null;
+  return Math.round(
+    measured.reduce((total, value) => total + value, 0) / measured.length,
+  );
+}
+
 function matchesStatus(
   statusCode: number | null,
   status: PagesFilters["status"],
