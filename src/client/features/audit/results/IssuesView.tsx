@@ -9,12 +9,14 @@ import type { AuditResultsData } from "@/client/features/audit/results/types";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
 import {
+  countIssuesBySeverity,
   filterIssueRows,
   resolveIssueSeverity,
   type IssueFilter,
 } from "@/client/features/audit/results/IssueFilterLogic";
 
 export {
+  countIssuesBySeverity,
   filterIssueRows,
   resolveIssueSeverity,
   type IssueFilter,
@@ -97,6 +99,7 @@ export function IssuesView({
 }) {
   const [localFilter, setLocalFilter] = useState<IssueFilter>(filter);
   const activeFilter = onFilterChange ? filter : localFilter;
+  const severityCounts = useMemo(() => countIssuesBySeverity(issues), [issues]);
   const groups = useMemo(() => groupIssues(issues), [issues]);
   const filteredGroups = useMemo(
     () => filterIssueGroups(groups, activeFilter),
@@ -108,9 +111,7 @@ export function IssuesView({
       (["critical", "warning", "info"] as const)
         .map((severity) => ({
           severity,
-          groups: filteredGroups.filter(
-            (group) => group.severity === severity,
-          ),
+          groups: filteredGroups.filter((group) => group.severity === severity),
         }))
         .filter((section) => section.groups.length > 0),
     [filteredGroups],
@@ -141,6 +142,7 @@ export function IssuesView({
             type="button"
             className={`btn btn-xs ${activeFilter === option ? "btn-primary" : "btn-ghost"}`}
             aria-pressed={activeFilter === option}
+            aria-label={`Show ${option === "all" ? "all" : SEVERITY_LABEL[option]} issues (${option === "all" ? issues.length : severityCounts[option]})`}
             onClick={() => {
               setLocalFilter(option);
               onFilterChange?.(option);
@@ -150,6 +152,9 @@ export function IssuesView({
             }}
           >
             {option === "all" ? "All issues" : SEVERITY_LABEL[option]}
+            <span className="badge badge-xs border-0 bg-base-content/10 tabular-nums">
+              {option === "all" ? issues.length : severityCounts[option]}
+            </span>
           </button>
         ))}
         {activeFilter !== "all" && filteredGroups.length === 0 && (

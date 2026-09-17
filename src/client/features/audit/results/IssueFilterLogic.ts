@@ -24,3 +24,15 @@ export function filterIssueRows(
     ? issues
     : issues.filter((issue) => resolveIssueSeverity(issue) === filter);
 }
+
+export function countIssuesBySeverity(
+  issues: AuditIssueRow[],
+): Record<IssueSeverity, number> {
+  return issues.reduce(
+    (counts, issue) => {
+      counts[resolveIssueSeverity(issue)] += 1;
+      return counts;
+    },
+    { critical: 0, warning: 0, info: 0 },
+  );
+}
