@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -6,10 +6,17 @@ import {
   exportPages,
   exportPerformance,
 } from "@/client/features/audit/results/export";
+import { extractPathname } from "@/client/features/audit/shared";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
 import {
+  EMPTY_PAGES_FILTERS,
+  EMPTY_PERFORMANCE_FILTERS,
   averageResponseTimeMs,
+  filterPages,
+  filterPerformanceRows,
   isLighthouseFailure,
+  type PagesFilters,
+  type PerformanceFilters,
 } from "@/client/features/audit/results/AuditResultsTableFilterLogic";
 import {
   IssuesView,
@@ -49,6 +56,31 @@ export function ResultsView({
   const hasPerformanceTab = lighthouse.length > 0;
   const activeTab =
     tab === "performance" && !hasPerformanceTab ? "issues" : tab;
+  const [pagesFilters, setPagesFilters] =
+    useState<PagesFilters>(EMPTY_PAGES_FILTERS);
+  const [performanceFilters, setPerformanceFilters] =
+    useState<PerformanceFilters>(EMPTY_PERFORMANCE_FILTERS);
+  const filteredPages = useMemo(
+    () => filterPages(pages, pagesFilters),
+    [pages, pagesFilters],
+  );
+  const performanceRows = useMemo(
+    () =>
+      lighthouse.map((result) => {
+        const page = pages.find((candidate) => candidate.id === result.pageId);
+        const pageUrl = page?.url ?? null;
+        return {
+          ...result,
+          pageUrl,
+          pagePath: pageUrl ? extractPathname(pageUrl) : null,
+        };
+      }),
+    [lighthouse, pages],
+  );
+  const filteredPerformance = useMemo(
+    () => filterPerformanceRows(performanceRows, performanceFilters),
+    [performanceFilters, performanceRows],
+  );
   const stats = useResultStats(pages, lighthouse);
   const blockedCount = useMemo(
     () => pages.filter((page) => page.fetchClass === "blocked").length,
@@ -109,14 +141,14 @@ export function ResultsView({
                 tab: activeTab,
               });
               if (activeTab === "performance") {
-                exportPerformance(lighthouse, pages, format);
+                exportPerformance(filteredPerformance, pages, format);
                 return;
               }
               if (activeTab === "issues") {
                 exportIssues(filterIssueRows(issues, issueFilter), format);
                 return;
               }
-              exportPages(pages, format);
+              exportPages(filteredPages, format);
             }}
           />
 
@@ -132,6 +164,8 @@ export function ResultsView({
               pages={pages}
               startUrl={audit.startUrl}
               issues={issues}
+              filters={pagesFilters}
+              onFiltersChange={setPagesFilters}
             />
           )}
           {activeTab === "performance" && lighthouse.length > 0 && (
@@ -140,6 +174,8 @@ export function ResultsView({
               projectId={projectId}
               lighthouse={lighthouse}
               pages={pages}
+              filters={performanceFilters}
+              onFiltersChange={setPerformanceFilters}
             />
           )}
         </div>
@@ -152,7 +188,10 @@ function useResultStats(
   pages: AuditResultsData["pages"],
   lighthouse: AuditResultsData["lighthouse"],
 ) {
-  const averageResponseMs = useMemo(() => averageResponseTimeMs(pages), [pages]);
+  const averageResponseMs = useMemo(
+    () => averageResponseTimeMs(pages),
+    [pages],
+  );
 
   const lighthouseSummary = useMemo(() => {
     const failed = lighthouse.filter(
@@ -240,7 +279,11 @@ function ResultsHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className="btn btn-outline btn-sm" onClick={onRerun}>
+        <button
+          type="button"
+          className="btn btn-outline btn-sm"
+          onClick={onRerun}
+        >
           Rerun audit
         </button>
         <button

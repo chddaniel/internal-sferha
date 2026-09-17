@@ -39,15 +39,16 @@ export function PerformanceTable({
   projectId,
   lighthouse,
   pages,
+  filters,
+  onFiltersChange,
 }: {
   auditId: string;
   projectId: string;
   lighthouse: AuditResultsData["lighthouse"];
   pages: AuditResultsData["pages"];
+  filters: PerformanceFilters;
+  onFiltersChange: (filters: PerformanceFilters) => void;
 }) {
-  const [filters, setFilters] = useState<PerformanceFilters>(
-    EMPTY_PERFORMANCE_FILTERS,
-  );
   const [showFilters, setShowFilters] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "performanceScore", desc: false },
@@ -97,9 +98,9 @@ export function PerformanceTable({
       {showFilters ? (
         <PerformanceFilterBar
           filters={filters}
-          onChange={setFilters}
+          onChange={onFiltersChange}
           activeFilterCount={activeFilterCount}
-          onReset={() => setFilters(EMPTY_PERFORMANCE_FILTERS)}
+          onReset={() => onFiltersChange(EMPTY_PERFORMANCE_FILTERS)}
         />
       ) : null}
       <AppDataTable

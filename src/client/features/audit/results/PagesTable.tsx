@@ -187,12 +187,15 @@ export function PagesTable({
   pages,
   startUrl,
   issues,
+  filters,
+  onFiltersChange,
 }: {
   pages: AuditResultsData["pages"];
   startUrl: string;
   issues: AuditResultsData["issues"];
+  filters: PagesFilters;
+  onFiltersChange: (filters: PagesFilters) => void;
 }) {
-  const [filters, setFilters] = useState<PagesFilters>(EMPTY_PAGES_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
   // URL order reads as a site inventory; status-first would open the table
   // on its most boring rows (redirects) whenever a site has no errors.
@@ -237,9 +240,9 @@ export function PagesTable({
       {showFilters ? (
         <PagesFilterBar
           filters={filters}
-          onChange={setFilters}
+          onChange={onFiltersChange}
           activeFilterCount={activeFilterCount}
-          onReset={() => setFilters(EMPTY_PAGES_FILTERS)}
+          onReset={() => onFiltersChange(EMPTY_PAGES_FILTERS)}
         />
       ) : null}
       <AppDataTable
