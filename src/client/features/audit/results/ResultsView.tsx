@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -60,6 +60,10 @@ export function ResultsView({
     useState<PagesFilters>(EMPTY_PAGES_FILTERS);
   const [performanceFilters, setPerformanceFilters] =
     useState<PerformanceFilters>(EMPTY_PERFORMANCE_FILTERS);
+  useEffect(() => {
+    setPagesFilters(EMPTY_PAGES_FILTERS);
+    setPerformanceFilters(EMPTY_PERFORMANCE_FILTERS);
+  }, [audit.id]);
   const filteredPages = useMemo(
     () => filterPages(pages, pagesFilters),
     [pages, pagesFilters],
