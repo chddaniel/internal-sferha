@@ -5,6 +5,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
+import { ExternalLink } from "lucide-react";
 import {
   AppDataTable,
   useAppTable,
@@ -124,9 +125,24 @@ function buildPerformanceColumns({
   return [
     performanceColumnHelper.accessor("pagePath", {
       header: ({ column }) => <SortableHeader column={column} label="URL" />,
-      cell: ({ getValue }) => (
-        <span className="text-xs">{getValue() ?? "-"}</span>
-      ),
+      cell: ({ getValue, row }) => {
+        const pageUrl = row.original.pageUrl;
+        const label = getValue() ?? pageUrl ?? "-";
+        return pageUrl ? (
+          <a
+            href={pageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="link link-primary inline-flex max-w-[180px] items-center gap-1 text-xs"
+            title={pageUrl}
+          >
+            <span className="truncate">{label}</span>
+            <ExternalLink className="size-3 shrink-0" />
+          </a>
+        ) : (
+          <span className="text-xs">{label}</span>
+        );
+      },
       sortingFn: nullableStringSort,
       meta: { cellClassName: "max-w-[180px] truncate" },
     }),
