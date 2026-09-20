@@ -144,11 +144,11 @@ export function TableExportMenu({
 }) {
   return (
     <div className="dropdown dropdown-end">
-      <div tabIndex={0} role="button" className={buttonClassName}>
+      <button type="button" className={buttonClassName}>
         <Download className="size-4" />
         Export
         <ChevronDown className="size-3 opacity-60" />
-      </div>
+      </button>
       <ul tabIndex={0} className={menuClassName}>
         {actions.map((action, index) => (
           <li key={index}>
