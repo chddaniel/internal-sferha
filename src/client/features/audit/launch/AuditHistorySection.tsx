@@ -133,14 +133,13 @@ function HistoryActions({
         Rerun
       </button>
       <div className="dropdown dropdown-end">
-        <div
-          tabIndex={0}
-          role="button"
+        <button
+          type="button"
           className="btn btn-ghost btn-xs btn-square"
           aria-label="Audit actions"
         >
           <MoreHorizontal className="size-3.5" />
-        </div>
+        </button>
         <ul
           tabIndex={0}
           className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-40"
