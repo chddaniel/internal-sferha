@@ -77,7 +77,16 @@ export function PercentDelta({
   current: number;
   previous: number;
 }) {
-  if (previous <= 0) return null;
+  if (previous <= 0) {
+    return current > 0 ? (
+      <p
+        className="text-xs text-success"
+        title="No activity in the previous period"
+      >
+        New
+      </p>
+    ) : null;
+  }
   const pct = ((current - previous) / previous) * 100;
   if (!Number.isFinite(pct)) return null;
   const rounded = Math.round(pct);
