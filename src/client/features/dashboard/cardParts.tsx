@@ -73,15 +73,19 @@ export function Stat({
 export function PercentDelta({
   current,
   previous,
+  lowerIsBetter = false,
+  title,
 }: {
   current: number;
   previous: number;
+  lowerIsBetter?: boolean;
+  title?: string;
 }) {
   if (previous <= 0) {
     return current > 0 ? (
       <p
-        className="text-xs text-success"
-        title="No activity in the previous period"
+        className={`text-xs ${lowerIsBetter ? "text-base-content/60" : "text-success"}`}
+        title={title ?? "No activity in the previous period"}
       >
         New
       </p>
@@ -90,10 +94,12 @@ export function PercentDelta({
   const pct = ((current - previous) / previous) * 100;
   if (!Number.isFinite(pct)) return null;
   const rounded = Math.round(pct);
-  const tone = rounded > 0 ? "text-success" : rounded < 0 ? "text-error" : "";
+  const improved = lowerIsBetter ? rounded < 0 : rounded > 0;
+  const tone = rounded === 0 ? "" : improved ? "text-success" : "text-error";
   return (
-    <p className={`text-xs tabular-nums ${tone}`}>
-      {rounded > 0 ? "▲" : rounded < 0 ? "▼" : ""} {Math.abs(rounded)}%
+    <p className={`text-xs tabular-nums ${tone}`} title={title}>
+      {rounded > 0 ? "▲ +" : rounded < 0 ? "▼ " : ""}
+      {Math.abs(rounded)}%
     </p>
   );
 }

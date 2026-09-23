@@ -61,6 +61,9 @@ export function GscCard({
   }
 
   const report = reportQuery.data;
+  const comparisonTitle = report?.connected
+    ? `Compared with ${report.range.prevStartDate} to ${report.range.prevEndDate}`
+    : undefined;
 
   return (
     <CardShell
@@ -95,6 +98,7 @@ export function GscCard({
               <PercentDelta
                 current={report.totals.clicks}
                 previous={report.prevTotals.clicks}
+                title={comparisonTitle}
               />
             }
           />
@@ -105,13 +109,32 @@ export function GscCard({
               <PercentDelta
                 current={report.totals.impressions}
                 previous={report.prevTotals.impressions}
+                title={comparisonTitle}
               />
             }
           />
-          <Stat label="CTR" value={formatCtr(report.totals.ctr)} />
+          <Stat
+            label="CTR"
+            value={formatCtr(report.totals.ctr)}
+            sub={
+              <PercentDelta
+                current={report.totals.ctr}
+                previous={report.prevTotals.ctr}
+                title={comparisonTitle}
+              />
+            }
+          />
           <Stat
             label="Avg position"
             value={formatPosition(report.totals.position)}
+            sub={
+              <PercentDelta
+                current={report.totals.position}
+                previous={report.prevTotals.position}
+                lowerIsBetter
+                title={`${comparisonTitle ?? "Previous period"} · lower is better`}
+              />
+            }
           />
         </div>
       ) : null}
