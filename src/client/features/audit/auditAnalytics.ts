@@ -13,3 +13,12 @@ export function auditResultTab(
   if (tab === "pages" || tab === "performance") return tab;
   return "issues";
 }
+
+export function resolveAvailableAuditTab(
+  tab: string,
+  hasPerformanceResults: boolean,
+): "issues" | "pages" | "performance" {
+  if (tab === "pages") return "pages";
+  if (tab === "performance" && hasPerformanceResults) return "performance";
+  return "issues";
+}

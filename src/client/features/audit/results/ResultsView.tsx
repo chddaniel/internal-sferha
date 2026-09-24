@@ -30,7 +30,10 @@ import {
 } from "@/client/features/audit/results/ResultsTables";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { copyTextToClipboard } from "@/client/lib/clipboard";
-import { AUDIT_EVENTS } from "@/client/features/audit/auditAnalytics";
+import {
+  AUDIT_EVENTS,
+  resolveAvailableAuditTab,
+} from "@/client/features/audit/auditAnalytics";
 import type { IssueFilter } from "@/client/features/audit/results/IssuesView";
 
 type ResultsTab = "issues" | "pages" | "performance";
@@ -54,8 +57,10 @@ export function ResultsView({
 }) {
   const { audit, pages, lighthouse, issues } = data;
   const hasPerformanceTab = lighthouse.length > 0;
-  const activeTab =
-    tab === "performance" && !hasPerformanceTab ? "issues" : tab;
+  const activeTab = resolveAvailableAuditTab(tab, hasPerformanceTab);
+  useEffect(() => {
+    if (tab !== activeTab) onTabChange(activeTab);
+  }, [activeTab, onTabChange, tab]);
   const [pagesFilters, setPagesFilters] =
     useState<PagesFilters>(EMPTY_PAGES_FILTERS);
   const [performanceFilters, setPerformanceFilters] =
