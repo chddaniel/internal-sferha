@@ -27,6 +27,7 @@ import {
   normalizeExportValue,
   type CsvValue,
 } from "@/client/lib/csv";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import { captureClientEvent } from "@/client/lib/posthog";
@@ -287,7 +288,7 @@ export function StrikingDistanceTable({
       const text = selectedQueries
         .map((query) => normalizeExportValue(query))
         .join("\n");
-      await navigator.clipboard.writeText(text);
+      await copyTextToClipboard(text);
       toast.success(
         `Copied ${selectedQueries.length} ${selectedQueries.length === 1 ? "keyword" : "keywords"}`,
       );
