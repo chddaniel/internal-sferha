@@ -25,6 +25,7 @@ import {
 import { pagesToTable } from "@/client/features/domain/utils";
 import type { DomainOverviewRouteState } from "@/client/features/domain/domainRouteState";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
@@ -151,8 +152,12 @@ export function PagesTab({
   const exportTable = useMemo(() => pagesToTable(rows), [rows]);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(JSON.stringify(rows, null, 2));
-    toast.success("Copied data");
+    try {
+      await copyTextToClipboard(JSON.stringify(rows, null, 2));
+      toast.success("Copied data");
+    } catch {
+      toast.error("Could not copy data");
+    }
   };
   const handleExportToSheets = () => {
     void exportTableToSheets({

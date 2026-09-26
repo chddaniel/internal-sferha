@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Modal } from "@/client/components/Modal";
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { getRankKeywordHistory } from "@/serverFunctions/rank-tracking";
 import type { RankKeywordHistoryPoint } from "@/serverFunctions/rank-tracking";
@@ -120,11 +121,15 @@ export function KeywordTrendModal({
       csvChange(r.position, r.previousPosition),
     ]);
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     const headers = ["Date", "Device", "Position", "Change vs previous"];
-    void navigator.clipboard.writeText(buildCsv(headers, exportRows()));
-    toast.success("Copied to clipboard");
-    captureClientEvent("rank_tracking:keyword_trend_copy");
+    try {
+      await copyTextToClipboard(buildCsv(headers, exportRows()));
+      toast.success("Copied to clipboard");
+      captureClientEvent("rank_tracking:keyword_trend_copy");
+    } catch {
+      toast.error("Could not copy to clipboard");
+    }
   };
 
   const handleExport = () => {

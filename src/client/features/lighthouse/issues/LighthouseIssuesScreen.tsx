@@ -6,6 +6,7 @@ import {
   getAuditLighthouseIssues,
 } from "@/serverFunctions/lighthouse";
 import { downloadFile } from "@/client/lib/download";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import type { CategoryTab, ExportPayload, LighthouseIssue } from "./types";
@@ -199,7 +200,7 @@ function useLighthouseIssuesActions({
   const runCopy = async (data: ExportPayload, toastMessage: string) => {
     try {
       const exported = await exportMutation.mutateAsync(data);
-      await navigator.clipboard.writeText(exported.content);
+      await copyTextToClipboard(exported.content);
       toast.success(toastMessage);
     } catch (error) {
       const message =

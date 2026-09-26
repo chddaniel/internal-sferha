@@ -11,6 +11,7 @@ import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { FreePlanAlert } from "./FreePlanAlert";
 import { RankTrackingDetailHeader } from "./RankTrackingDetailHeader";
 import { RankTrackingOverview } from "./RankTrackingOverview";
@@ -282,10 +283,9 @@ export function RankTrackingDomainDetail({
             )
           }
           onCopyKeywords={() => {
-            void navigator.clipboard.writeText(
-              filtered.map((r) => r.keyword).join("\n"),
-            );
-            toast.success("Keywords copied to clipboard");
+            void copyTextToClipboard(filtered.map((r) => r.keyword).join("\n"))
+              .then(() => toast.success("Keywords copied to clipboard"))
+              .catch(() => toast.error("Could not copy keywords"));
           }}
           onCheckNow={() => {
             const count = costEstimate?.keywordCount ?? rows?.length ?? 0;

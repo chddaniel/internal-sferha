@@ -1,6 +1,7 @@
 import { Check, ChevronDown, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 
 export function Collapsible({
   id,
@@ -95,12 +96,8 @@ export function CopyButton({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-      toast.error("Clipboard not available");
-      return;
-    }
     try {
-      await navigator.clipboard.writeText(value);
+      await copyTextToClipboard(value);
       toast.success(successMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
