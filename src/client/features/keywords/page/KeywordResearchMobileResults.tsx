@@ -10,7 +10,7 @@ import {
 import {
   downloadKeywordResearchCsv,
   KEYWORD_RESEARCH_HEADERS,
-  keywordResearchExportRow,
+  selectedKeywordResearchExportRows,
 } from "@/client/features/keywords/state/keywordControllerActions";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import { captureClientEvent } from "@/client/lib/posthog";
@@ -100,9 +100,10 @@ function MobileKeywordResults({ controller }: Props) {
         : `Showing ${filteredRows.length} keywords`;
 
   const canExport = filteredRows.length > 0;
-  const selectedExportRows = filteredRows
-    .filter((row) => selectedRows.has(row.keyword))
-    .map(keywordResearchExportRow);
+  const selectedExportRows = selectedKeywordResearchExportRows(
+    rows,
+    selectedRows,
+  );
   const handleExportToSheets = () => {
     void exportTableToSheets({
       headers: KEYWORD_RESEARCH_HEADERS,

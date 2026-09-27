@@ -32,6 +32,15 @@ export function keywordResearchExportRow(row: KeywordResearchRow): CsvValue[] {
   ];
 }
 
+export function selectedKeywordResearchExportRows(
+  rows: KeywordResearchRow[],
+  selectedRows: Set<string>,
+): CsvValue[][] {
+  return rows
+    .filter((row) => selectedRows.has(row.keyword))
+    .map(keywordResearchExportRow);
+}
+
 type SaveExportActionParams = {
   selectedRows: Set<string>;
   rows: KeywordResearchRow[];
