@@ -32,6 +32,7 @@ import { useSavedKeywordsExport } from "@/client/features/saved-keywords/useSave
 import { useSavedKeywordsFilters } from "@/client/features/saved-keywords/useSavedKeywordsFilters";
 import { useTagManage } from "@/client/features/saved-keywords/useTagManage";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
   getSavedKeywords,
@@ -122,6 +123,19 @@ function SavedKeywordsPage() {
   const selectedRows = savedKeywords.filter((row) => rowSelection[row.id]);
   const selectedIds = selectedRows.map((row) => row.id);
   const selectedCount = selectedIds.length;
+
+  const handleCopySelectedKeywords = async () => {
+    try {
+      await copyTextToClipboard(
+        selectedRows.map((row) => row.keyword).join("\n"),
+      );
+      toast.success(
+        `${selectedCount} keyword${selectedCount !== 1 ? "s" : ""} copied`,
+      );
+    } catch {
+      toast.error("Could not copy keywords");
+    }
+  };
 
   const selectedRowTags = useMemo<SavedKeywordTag[]>(() => {
     const map = new Map<string, SavedKeywordTag>();
@@ -310,14 +324,7 @@ function SavedKeywordsPage() {
         <SavedKeywordsBulkActionBar
           selectedCount={selectedCount}
           exportingSelection={exporter.exportingSelection}
-          onCopy={() => {
-            void navigator.clipboard.writeText(
-              selectedRows.map((row) => row.keyword).join("\n"),
-            );
-            toast.success(
-              `${selectedCount} keyword${selectedCount !== 1 ? "s" : ""} copied`,
-            );
-          }}
+          onCopy={() => void handleCopySelectedKeywords()}
           onOpenTags={() => setShowTagModal(true)}
           onExportCsv={() => exporter.exportSelectionCsv(selectedRows)}
           onExportSheets={() =>

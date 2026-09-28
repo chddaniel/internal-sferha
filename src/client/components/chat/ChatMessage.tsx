@@ -1,5 +1,6 @@
 import { type UIMessage } from "ai";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   Check,
@@ -10,6 +11,7 @@ import {
   Undo2,
 } from "lucide-react";
 import { Markdown } from "@/client/components/Markdown";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 
 // Shared rendering for the chat agents (onboarding + SAM). The chats differ
 // only in which tools are available and how tool names become labels
@@ -59,17 +61,24 @@ function messageText(message: UIMessage): string {
 
 function CopyButton({ message }: { message: UIMessage }) {
   const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await copyTextToClipboard(messageText(message));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Could not copy message");
+    }
+  };
+
   return (
     <button
       type="button"
       aria-label="Copy message"
       title="Copy"
       className="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-base-content"
-      onClick={() => {
-        void navigator.clipboard.writeText(messageText(message));
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
+      onClick={() => void handleCopy()}
     >
       {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
     </button>

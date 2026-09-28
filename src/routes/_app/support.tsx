@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 
 const SUPPORT_EMAIL = "ben@openseo.so";
 const DISCORD_URL = "https://discord.gg/c9uGs3cFXr";
@@ -15,10 +16,14 @@ function SupportPage() {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(SUPPORT_EMAIL);
-    toast.success("Email copied to clipboard");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await copyTextToClipboard(SUPPORT_EMAIL);
+      toast.success("Email copied to clipboard");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy email");
+    }
   };
 
   return (
