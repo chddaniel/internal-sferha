@@ -8,6 +8,19 @@ import {
 } from "@/client/features/keywords/keywordResearchTypes";
 import type { SortDir, SortField } from "@/client/features/keywords/components";
 
+function matchesNumericRange(
+  value: number | null | undefined,
+  min: string,
+  max: string,
+): boolean {
+  if (min === "" && max === "") return true;
+  if (value == null) return false;
+
+  if (min !== "" && value < Number(min)) return false;
+  if (max !== "" && value > Number(max)) return false;
+  return true;
+}
+
 export function applyKeywordFiltersAndSort(params: {
   rows: KeywordResearchRow[];
   filters: KeywordFilterValues;
@@ -34,20 +47,25 @@ export function applyKeywordFiltersAndSort(params: {
       return false;
     }
 
-    const vol = row.searchVolume ?? 0;
-    const cpc = row.cpc ?? 0;
-    const kd = row.keywordDifficulty ?? 0;
-
-    if (params.filters.minVol && vol < Number(params.filters.minVol))
+    if (
+      !matchesNumericRange(
+        row.searchVolume,
+        params.filters.minVol,
+        params.filters.maxVol,
+      ) ||
+      !matchesNumericRange(
+        row.cpc,
+        params.filters.minCpc,
+        params.filters.maxCpc,
+      ) ||
+      !matchesNumericRange(
+        row.keywordDifficulty,
+        params.filters.minKd,
+        params.filters.maxKd,
+      )
+    ) {
       return false;
-    if (params.filters.maxVol && vol > Number(params.filters.maxVol))
-      return false;
-    if (params.filters.minCpc && cpc < Number(params.filters.minCpc))
-      return false;
-    if (params.filters.maxCpc && cpc > Number(params.filters.maxCpc))
-      return false;
-    if (params.filters.minKd && kd < Number(params.filters.minKd)) return false;
-    if (params.filters.maxKd && kd > Number(params.filters.maxKd)) return false;
+    }
     return true;
   });
 

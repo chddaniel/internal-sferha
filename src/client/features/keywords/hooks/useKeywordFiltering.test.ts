@@ -105,3 +105,40 @@ describe("applyKeywordFiltersAndSort — intent filtering", () => {
     expect(result).toHaveLength(rows.length);
   });
 });
+
+describe("applyKeywordFiltersAndSort — numeric filters", () => {
+  const rowsWithMissingMetrics: KeywordResearchRow[] = [
+    makeRow("known volume", "commercial"),
+    { ...makeRow("unknown volume", "commercial"), searchVolume: null },
+    { ...makeRow("unknown cpc", "commercial"), cpc: null },
+    { ...makeRow("unknown difficulty", "commercial"), keywordDifficulty: null },
+  ];
+
+  it("keeps missing metrics when their range is not filtered", () => {
+    expect(
+      filter(rowsWithMissingMetrics, {}).map((row) => row.keyword),
+    ).toEqual([
+      "known volume",
+      "unknown cpc",
+      "unknown difficulty",
+      "unknown volume",
+    ]);
+  });
+
+  it("does not treat missing search volume as zero in a bounded range", () => {
+    expect(
+      filter(rowsWithMissingMetrics, { maxVol: "100" }).map(
+        (row) => row.keyword,
+      ),
+    ).toEqual(["known volume", "unknown cpc", "unknown difficulty"]);
+  });
+
+  it("excludes missing CPC and difficulty from their bounded ranges", () => {
+    expect(
+      filter(rowsWithMissingMetrics, { maxCpc: "2" }).map((row) => row.keyword),
+    ).toEqual(["known volume", "unknown difficulty", "unknown volume"]);
+    expect(
+      filter(rowsWithMissingMetrics, { maxKd: "20" }).map((row) => row.keyword),
+    ).toEqual(["known volume", "unknown cpc", "unknown volume"]);
+  });
+});
