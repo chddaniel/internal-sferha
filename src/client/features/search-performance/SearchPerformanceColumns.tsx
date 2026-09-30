@@ -33,6 +33,15 @@ export function formatPosition(value: number): string {
   return value.toFixed(1);
 }
 
+export function isSafePageUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 const rightAligned = {
   headerClassName: "text-right",
   cellClassName: "text-right tabular-nums",
@@ -47,11 +56,27 @@ export function buildDimensionColumns(
     dimensionHelper.accessor("key", {
       enableSorting: false,
       header: () => keyLabel,
-      cell: ({ getValue }) => (
-        <span className="block max-w-xl truncate" title={getValue()}>
-          {getValue()}
-        </span>
-      ),
+      cell: ({ getValue }) => {
+        const value = getValue();
+        if (keyLabel === "Page" && isSafePageUrl(value)) {
+          return (
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link link-hover block max-w-xl truncate"
+              title={value}
+            >
+              {value}
+            </a>
+          );
+        }
+        return (
+          <span className="block max-w-xl truncate" title={value}>
+            {value}
+          </span>
+        );
+      },
     }),
     dimensionHelper.accessor("clicks", {
       header: ({ column }) => (
