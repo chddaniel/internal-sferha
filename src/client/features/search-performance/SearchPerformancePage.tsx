@@ -1,17 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  keepPreviousData,
-  queryOptions,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Loader2, Sheet } from "lucide-react";
 import { toast } from "sonner";
 import { TableExportMenu } from "@/client/components/table/TableBulkActionBar";
 import { TablePagination } from "@/client/components/table/TablePagination";
 import { SearchConsoleConnectionCard } from "@/client/features/gsc/SearchConsoleConnectionCard";
 import { SearchPerformanceLoadingState } from "@/client/features/search-performance/SearchPerformanceLoadingState";
+import { canKeepSearchPerformancePlaceholder } from "@/client/features/search-performance/searchPerformanceQueryState";
 import {
   DimensionTable,
   exportDimensionRows,
@@ -142,7 +138,10 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
     queryKey: ["searchPerformance", projectId, range, device, country],
     queryFn: () =>
       getSearchPerformanceReport({ data: { projectId, ...filterInput } }),
-    placeholderData: keepPreviousData,
+    placeholderData: (previousData, previousQuery) =>
+      canKeepSearchPerformancePlaceholder(previousQuery?.queryKey, projectId)
+        ? previousData
+        : undefined,
   });
   const report = reportQuery.data;
 
@@ -151,7 +150,14 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
   const tableQuery = useQuery({
     ...tableQueryOptions(projectId, dimension, page, pageSize, filterInput),
     enabled: report?.connected === true && isTableTab,
-    placeholderData: keepPreviousData,
+    placeholderData: (previousData, previousQuery) =>
+      canKeepSearchPerformancePlaceholder(
+        previousQuery?.queryKey,
+        projectId,
+        dimension,
+      )
+        ? previousData
+        : undefined,
   });
   const tableData = tableQuery.data;
   const tableRows = tableData?.connected ? tableData.rows : [];
