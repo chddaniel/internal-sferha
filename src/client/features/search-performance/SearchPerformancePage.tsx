@@ -162,6 +162,7 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
   const tableData = tableQuery.data;
   const tableRows = tableData?.connected ? tableData.rows : [];
   const hasNextPage = tableData?.connected ? tableData.hasNextPage : false;
+  const hasDeviceOrCountryFilter = device !== ALL || country !== ALL;
 
   // Warm the Queries tab (first page) as soon as the report connects so the tab
   // opens instantly instead of showing a spinner. Free first-party GSC data.
@@ -342,6 +343,19 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                     <DimensionTable
                       rows={tableRows}
                       keyLabel={tab === "queries" ? "Query" : "Page"}
+                      emptyMessage={
+                        hasDeviceOrCountryFilter
+                          ? `No ${tab} match the selected device and country. Try changing the filters or date range.`
+                          : undefined
+                      }
+                      onClearFilters={
+                        hasDeviceOrCountryFilter
+                          ? () => {
+                              setDevice(ALL);
+                              setCountry(ALL);
+                            }
+                          : undefined
+                      }
                     />
                   </div>
                   <TablePagination
