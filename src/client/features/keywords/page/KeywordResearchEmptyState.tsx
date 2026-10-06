@@ -24,6 +24,15 @@ function NoResultsState({
   controller: KeywordResearchControllerState;
 }) {
   const { lastSearchKeyword, lastSearchLocationCode } = controller;
+  const alternativeMode =
+    controller.keywordMode === "suggestions" ? "ideas" : "suggestions";
+  const alternativeModeLabel =
+    alternativeMode === "ideas" ? "Ideas" : "Suggestions";
+
+  const searchWithAlternativeMode = () => {
+    controller.controlsForm.setFieldValue("mode", alternativeMode);
+    void controller.controlsForm.handleSubmit();
+  };
 
   return (
     <div className="pt-1">
@@ -31,10 +40,10 @@ function NoResultsState({
         <Globe className="size-10 mx-auto text-base-content/40" />
         <div className="space-y-2">
           <p className="text-lg font-semibold text-base-content">
-            Not enough keyword data for this query yet
+            No keyword ideas found
           </p>
           <p className="text-sm text-base-content/70">
-            We could not find keyword opportunities for
+            No keyword ideas were returned for
             <span className="font-medium text-base-content">
               {` "${lastSearchKeyword}" `}
             </span>
@@ -44,7 +53,18 @@ function NoResultsState({
             </span>
             .
           </p>
+          <p className="text-sm text-base-content/70">
+            Try a broader seed keyword, or search another way to discover
+            related terms.
+          </p>
         </div>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={searchWithAlternativeMode}
+        >
+          Search with {alternativeModeLabel}
+        </button>
       </div>
     </div>
   );

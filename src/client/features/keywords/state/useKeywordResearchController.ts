@@ -260,6 +260,7 @@ export function useKeywordResearchController(
     history,
     historyLoaded,
     isLoading,
+    keywordMode: input.keywordMode,
     lastResultSource,
     lastSearchError,
     lastSearchKeyword,
