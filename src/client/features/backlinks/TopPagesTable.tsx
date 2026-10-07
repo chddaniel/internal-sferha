@@ -91,10 +91,12 @@ const columns = [
 
 export function TopPagesTable({
   rows,
+  activeFilterCount,
   sorting,
   onSortingChange,
 }: {
   rows: TopPageRow[];
+  activeFilterCount: number;
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
 }) {
@@ -107,7 +109,12 @@ export function TopPagesTable({
   });
 
   if (rows.length === 0) {
-    return <EmptyTableState label="No top pages match this filter." />;
+    return (
+      <EmptyTableState
+        entity="top pages"
+        activeFilterCount={activeFilterCount}
+      />
+    );
   }
 
   return (

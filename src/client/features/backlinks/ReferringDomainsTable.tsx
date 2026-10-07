@@ -168,11 +168,13 @@ function getDomainWebsiteHref(domain: string) {
 
 export function ReferringDomainsTable({
   rows,
+  activeFilterCount,
   domainRatings,
   sorting,
   onSortingChange,
 }: {
   rows: ReferringDomainRow[];
+  activeFilterCount: number;
   domainRatings: DomainRatings | null;
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
@@ -191,7 +193,12 @@ export function ReferringDomainsTable({
   });
 
   if (rows.length === 0) {
-    return <EmptyTableState label="No referring domains match this filter." />;
+    return (
+      <EmptyTableState
+        entity="referring domains"
+        activeFilterCount={activeFilterCount}
+      />
+    );
   }
 
   return (

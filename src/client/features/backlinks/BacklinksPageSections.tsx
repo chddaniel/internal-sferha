@@ -205,6 +205,7 @@ export function BacklinksResultsCard({
             {activeTab === "backlinks" ? (
               <BacklinksTable
                 rows={tabRows.backlinks}
+                activeFilterCount={activeFilterCount}
                 domainRatings={domainRatings}
                 sorting={sorting}
                 onSortingChange={onSortingChange}
@@ -214,6 +215,7 @@ export function BacklinksResultsCard({
             {activeTab === "domains" ? (
               <ReferringDomainsTable
                 rows={tabRows.referringDomains}
+                activeFilterCount={activeFilterCount}
                 domainRatings={domainRatings}
                 sorting={sorting}
                 onSortingChange={onSortingChange}
@@ -222,6 +224,7 @@ export function BacklinksResultsCard({
             {activeTab === "pages" ? (
               <TopPagesTable
                 rows={tabRows.topPages}
+                activeFilterCount={activeFilterCount}
                 sorting={sorting}
                 onSortingChange={onSortingChange}
               />

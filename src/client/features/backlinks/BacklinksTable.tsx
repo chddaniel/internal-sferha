@@ -76,12 +76,14 @@ function buildDisplayRows(
 
 export function BacklinksTable({
   rows,
+  activeFilterCount,
   domainRatings,
   sorting,
   onSortingChange,
   expansion,
 }: {
   rows: BacklinksRow[];
+  activeFilterCount: number;
   domainRatings: DomainRatings | null;
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
@@ -106,7 +108,12 @@ export function BacklinksTable({
   });
 
   if (rows.length === 0) {
-    return <EmptyTableState label="No backlinks match this filter." />;
+    return (
+      <EmptyTableState
+        entity="backlinks"
+        activeFilterCount={activeFilterCount}
+      />
+    );
   }
 
   return (
