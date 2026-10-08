@@ -127,6 +127,7 @@ export function RankTrackingDomainDetail({
 
   const handleKeywordsAdded = (result: {
     added: number;
+    requested: number;
     checkTriggered: boolean;
   }) => {
     void queryClient.invalidateQueries({
@@ -140,9 +141,17 @@ export function RankTrackingDomainDetail({
     });
     setShowAddKeywords(false);
     captureClientEvent("rank_tracking:keywords_add");
-    toast.success(
-      `${result.added} keyword${result.added !== 1 ? "s" : ""} added`,
-    );
+    if (result.added === result.requested) {
+      toast.success(
+        `${result.added} keyword${result.added !== 1 ? "s" : ""} added`,
+      );
+    } else if (result.added === 0) {
+      toast.info("No new keywords were added. They may already be tracked.");
+    } else {
+      toast.success(
+        `Added ${result.added} of ${result.requested} keywords. Duplicates or the domain limit were skipped.`,
+      );
+    }
     if (!result.checkTriggered && result.added > 0) {
       toast.info("Use 'Check Now' to check these keywords");
     }

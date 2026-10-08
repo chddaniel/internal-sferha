@@ -14,16 +14,20 @@ export function AddKeywordsPanel({
 }: {
   configId: string;
   projectId: string;
-  onSuccess: (result: { added: number; checkTriggered: boolean }) => void;
+  onSuccess: (result: {
+    added: number;
+    requested: number;
+    checkTriggered: boolean;
+  }) => void;
   onCancel: () => void;
 }) {
   const [keywordInput, setKeywordInput] = useState("");
   const mutation = useMutation({
     mutationFn: (kws: string[]) =>
       addTrackingKeywords({ data: { projectId, configId, keywords: kws } }),
-    onSuccess: (result) => {
+    onSuccess: (result, submittedKeywords) => {
       setKeywordInput("");
-      onSuccess(result);
+      onSuccess({ ...result, requested: submittedKeywords.length });
     },
     onError: (error) => {
       toast.error(getStandardErrorMessage(error, "Failed to add keywords"));
