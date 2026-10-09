@@ -71,8 +71,9 @@ export function DomainHistorySection({
               </span>
               <button
                 type="button"
-                className="btn btn-ghost btn-xs opacity-0 group-hover:opacity-100 p-1"
+                className="btn btn-ghost btn-xs opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 p-1"
                 onClick={() => onRemoveHistoryItem(item.timestamp)}
+                aria-label={`Remove ${item.domain} from recent searches`}
               >
                 <X className="size-3" />
               </button>
