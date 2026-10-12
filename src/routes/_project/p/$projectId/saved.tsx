@@ -298,11 +298,13 @@ function SavedKeywordsPage() {
               isFetching={isFetching && !isLoading}
             />
             <SavedKeywordsTable
+              projectId={projectId}
               rows={savedKeywords}
               rowSelection={rowSelection}
               sorting={sorting}
               isLoading={isLoading}
               hasActiveFilters={hasActiveFilters}
+              onClearFilters={handleClearAllFilters}
               onRowSelectionChange={setRowSelection}
               onSortingChange={handleSortingChange}
             />

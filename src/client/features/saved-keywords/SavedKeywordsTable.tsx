@@ -5,7 +5,6 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
-import { Search } from "lucide-react";
 import { useMemo } from "react";
 import {
   AppDataTable,
@@ -17,6 +16,7 @@ import { SortableHeader } from "@/client/components/table/SortableHeader";
 import { DifficultyBadge } from "@/client/features/domain/components/DifficultyBadge";
 import { IntentBadge } from "@/client/features/keywords/components";
 import type { KeywordIntent, SavedKeywordRow } from "@/types/keywords";
+import { SavedKeywordsEmptyState } from "./SavedKeywordsEmptyState";
 import { TagChip } from "./TagChip";
 import {
   formatSavedKeywordDate,
@@ -26,19 +26,23 @@ import {
 const columnHelper = createColumnHelper<SavedKeywordRow>();
 
 export function SavedKeywordsTable({
+  projectId,
   rows,
   rowSelection,
   sorting,
   isLoading,
   hasActiveFilters,
+  onClearFilters,
   onRowSelectionChange,
   onSortingChange,
 }: {
   rows: SavedKeywordRow[];
+  projectId: string;
   rowSelection: RowSelectionState;
   sorting: SortingState;
   isLoading: boolean;
   hasActiveFilters: boolean;
+  onClearFilters: () => void;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
   onSortingChange: OnChangeFn<SortingState>;
 }) {
@@ -134,7 +138,13 @@ export function SavedKeywordsTable({
       className="table table-sm"
       isLoading={isLoading}
       loading={<SavedKeywordsSkeleton />}
-      empty={<SavedKeywordsEmptyState hasActiveFilters={hasActiveFilters} />}
+      empty={
+        <SavedKeywordsEmptyState
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={onClearFilters}
+          projectId={projectId}
+        />
+      }
     />
   );
 }
@@ -181,23 +191,6 @@ function SavedKeywordsSkeleton() {
           <div className="skeleton h-4" />
         </div>
       ))}
-    </div>
-  );
-}
-
-function SavedKeywordsEmptyState({
-  hasActiveFilters,
-}: {
-  hasActiveFilters: boolean;
-}) {
-  return (
-    <div className="py-12 text-center text-sm text-base-content/55">
-      <Search className="mx-auto mb-2 size-8 opacity-40" />
-      <p>
-        {hasActiveFilters
-          ? "No saved keywords match the current filters."
-          : "No saved keywords yet. Use the Keyword Research page to find and save keywords."}
-      </p>
     </div>
   );
 }
