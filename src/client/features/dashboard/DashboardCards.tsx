@@ -86,9 +86,19 @@ export function GscCard({
           ))}
         </div>
       ) : reportQuery.isError ? (
-        <p className="text-sm text-base-content/60">
-          Couldn&rsquo;t load Search Console data. Try again shortly.
-        </p>
+        <div className="flex flex-col items-start gap-3">
+          <p role="alert" className="text-sm text-base-content/60">
+            Couldn&rsquo;t load Search Console data. Try again.
+          </p>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => void reportQuery.refetch()}
+            disabled={reportQuery.isFetching}
+          >
+            {reportQuery.isFetching ? "Retrying…" : "Retry"}
+          </button>
+        </div>
       ) : report?.connected ? (
         <div className="grid grid-cols-2 gap-3">
           <Stat
