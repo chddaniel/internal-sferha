@@ -75,6 +75,7 @@ export function LighthouseIssuesScreen(props: LighthouseIssuesScreenProps) {
     issuesQuery.error,
     "Failed to load Lighthouse issues.",
   );
+  const hasLoadError = issuesQuery.isError && !issuesQuery.data;
   const showsLegacyPayloadNotice =
     issuesQuery.data != null && !issuesQuery.data.hasIssueDetails;
   const emptyMessage = showsLegacyPayloadNotice
@@ -91,51 +92,64 @@ export function LighthouseIssuesScreen(props: LighthouseIssuesScreenProps) {
           finalUrl={issuesQuery.data?.finalUrl}
           scores={issuesQuery.data?.scores}
           metrics={issuesQuery.data?.metrics}
-          severityCounts={severityCounts}
+          severityCounts={hasLoadError ? undefined : severityCounts}
+          hasLoadError={hasLoadError}
         />
 
         <div className="card bg-base-100 border border-base-300">
           <div className="card-body gap-4">
             {issuesQuery.isError ? (
-              <div className="alert alert-error">
+              <div className="alert alert-error flex flex-wrap items-center justify-between gap-3">
                 <AlertCircle className="size-4" />
-                <span>{issuesErrorMessage}</span>
+                <span className="flex-1">{issuesErrorMessage}</span>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => void issuesQuery.refetch()}
+                  disabled={issuesQuery.isFetching}
+                >
+                  {issuesQuery.isFetching ? "Retrying…" : "Retry"}
+                </button>
               </div>
             ) : null}
 
-            {showsLegacyPayloadNotice ? (
-              <div className="alert alert-warning">
-                <TriangleAlert className="size-4" />
-                <span>
-                  This Lighthouse run was stored before issue details were
-                  preserved. Re-run the audit to see category counts and issue
-                  cards.
-                </span>
-              </div>
-            ) : null}
+            {!hasLoadError ? (
+              <>
+                {showsLegacyPayloadNotice ? (
+                  <div className="alert alert-warning">
+                    <TriangleAlert className="size-4" />
+                    <span>
+                      This Lighthouse run was stored before issue details were
+                      preserved. Re-run the audit to see category counts and
+                      issue cards.
+                    </span>
+                  </div>
+                ) : null}
 
-            <LighthouseIssuesToolbar
-              category={category}
-              categoryCounts={categoryCounts}
-              selectedCategoryLabel={selectedCategoryLabel}
-              isBusy={exportMutation.isPending}
-              visibleIssues={visibleIssues}
-              allIssues={allIssues}
-              onCategoryChange={onCategoryChange}
-              onCopy={(data, message) => {
-                void runCopy(data, message);
-              }}
-              onExport={(data) => {
-                void runExport(data);
-              }}
-              onExportCsv={runExportCsv}
-              onExportSheets={runExportSheets}
-            />
-            <LighthouseIssueList
-              issues={visibleIssues}
-              isLoading={issuesQuery.isLoading}
-              emptyMessage={emptyMessage}
-            />
+                <LighthouseIssuesToolbar
+                  category={category}
+                  categoryCounts={categoryCounts}
+                  selectedCategoryLabel={selectedCategoryLabel}
+                  isBusy={exportMutation.isPending}
+                  visibleIssues={visibleIssues}
+                  allIssues={allIssues}
+                  onCategoryChange={onCategoryChange}
+                  onCopy={(data, message) => {
+                    void runCopy(data, message);
+                  }}
+                  onExport={(data) => {
+                    void runExport(data);
+                  }}
+                  onExportCsv={runExportCsv}
+                  onExportSheets={runExportSheets}
+                />
+                <LighthouseIssueList
+                  issues={visibleIssues}
+                  isLoading={issuesQuery.isLoading}
+                  emptyMessage={emptyMessage}
+                />
+              </>
+            ) : null}
           </div>
         </div>
       </div>
