@@ -199,11 +199,17 @@ export function AuditHealthCard({
         </Link>
       }
     >
-      {audit.topIssues.length === 0 ? (
+      {audit.topIssues.length === 0 && audit.status === "completed" ? (
         <div className="flex items-center gap-2 text-sm text-base-content/70">
           <Check className="size-4 text-success" />
           No issues found — your site looks healthy.
         </div>
+      ) : audit.topIssues.length === 0 ? (
+        <p className="text-sm text-base-content/70">
+          {audit.status === "running"
+            ? "No issues found so far — the crawl is still checking your site."
+            : "The crawl failed, so it couldn’t confirm whether your site is healthy."}
+        </p>
       ) : (
         <ul className="space-y-2">
           {audit.topIssues.map((issue) => (
