@@ -295,8 +295,8 @@ export function BacklinkPulseCard({
     <CardShell
       title="Backlink pulse"
       stamp={`Backlinks · snapshot ${formatDay(backlinks.capturedAt)}${
-        refreshing ? " · refreshing…" : ""
-      }`}
+        backlinks.stale ? " · over 24 hours old" : ""
+      }${refreshing ? " · refreshing…" : ""}`}
       action={
         <Link
           to="/p/$projectId/backlinks"

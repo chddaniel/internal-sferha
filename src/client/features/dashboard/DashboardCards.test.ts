@@ -26,9 +26,11 @@ vi.mock("@/client/features/gsc/SearchConsoleConnectionCard", () => ({
   SearchConsoleConnectionCard: () => null,
 }));
 
-import { GscCard } from "./DashboardCards";
-import { AuditHealthCard } from "./DashboardCards";
-import type { DashboardAuditSummary } from "@/server/features/dashboard/services/DashboardService";
+import { AuditHealthCard, BacklinkPulseCard, GscCard } from "./DashboardCards";
+import type {
+  DashboardAuditSummary,
+  DashboardBacklinkSummary,
+} from "@/server/features/dashboard/services/DashboardService";
 
 function auditSummary(
   status: DashboardAuditSummary["status"],
@@ -41,6 +43,21 @@ function auditSummary(
     startedAt: "2026-10-16T07:00:00.000Z",
     topIssues: [],
     totalIssueTypes: 0,
+  };
+}
+
+function backlinkSummary(stale: boolean): DashboardBacklinkSummary {
+  return {
+    domain: "example.com",
+    rank: 42,
+    backlinks: 120,
+    referringDomains: 35,
+    newBacklinks: 4,
+    lostBacklinks: 2,
+    newReferringDomains: 1,
+    lostReferringDomains: 0,
+    capturedAt: "2026-10-15T07:00:00.000Z",
+    stale,
   };
 }
 
@@ -121,5 +138,31 @@ describe("AuditHealthCard empty results", () => {
     );
 
     expect(markup).toContain("No issues found — your site looks healthy.");
+  });
+});
+
+describe("BacklinkPulseCard freshness", () => {
+  it("labels snapshots older than 24 hours", () => {
+    const markup = renderToStaticMarkup(
+      createElement(BacklinkPulseCard, {
+        projectId: "project-123",
+        backlinks: backlinkSummary(true),
+        refreshing: false,
+      }),
+    );
+
+    expect(markup).toContain("over 24 hours old");
+  });
+
+  it("does not label a fresh snapshot as stale", () => {
+    const markup = renderToStaticMarkup(
+      createElement(BacklinkPulseCard, {
+        projectId: "project-123",
+        backlinks: backlinkSummary(false),
+        refreshing: false,
+      }),
+    );
+
+    expect(markup).not.toContain("over 24 hours old");
   });
 });
