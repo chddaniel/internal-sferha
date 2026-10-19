@@ -35,6 +35,11 @@ import {
   SEARCH_PERFORMANCE_PAGE_SIZES,
   type SearchPerformanceTableDimension,
 } from "@/types/schemas/search-performance";
+import {
+  percentDelta,
+  positionDelta,
+  type SearchPerformanceDelta,
+} from "./searchPerformanceDeltas";
 import { saveKeywords } from "@/serverFunctions/keywords";
 
 export type Tab = "striking" | "queries" | "pages";
@@ -136,25 +141,6 @@ export function TabButton({
   );
 }
 
-type Delta = { text: string; improved: boolean } | null;
-
-function percentDelta(current: number, previous: number): Delta {
-  if (previous <= 0) return null;
-  const change = (current - previous) / previous;
-  const pct = (change * 100).toFixed(1);
-  return { text: `${change >= 0 ? "+" : ""}${pct}%`, improved: change >= 0 };
-}
-
-/** Position falls as rankings improve, so the delta is inverted. */
-function positionDelta(current: number, previous: number): Delta {
-  if (previous <= 0 || current <= 0) return null;
-  const change = previous - current;
-  return {
-    text: `${change >= 0 ? "+" : ""}${change.toFixed(1)}`,
-    improved: change >= 0,
-  };
-}
-
 export function TotalsCards({ report }: { report: Report }) {
   const { totals, prevTotals, range } = report;
   const deltaTitle = `vs ${range.prevStartDate} to ${range.prevEndDate}`;
@@ -196,7 +182,7 @@ function TotalCard({
 }: {
   label: string;
   value: string;
-  delta: Delta;
+  delta: SearchPerformanceDelta;
   deltaTitle: string;
 }) {
   return (
