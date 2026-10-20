@@ -343,6 +343,8 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                     <DimensionTable
                       rows={tableRows}
                       keyLabel={tab === "queries" ? "Query" : "Page"}
+                      projectId={projectId}
+                      allowKeywordSave={tab === "queries"}
                       emptyMessage={
                         hasDeviceOrCountryFilter
                           ? `No ${tab} match the selected device and country. Try changing the filters or date range.`

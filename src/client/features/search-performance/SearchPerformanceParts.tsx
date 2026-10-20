@@ -13,7 +13,6 @@ import {
 } from "@/client/components/table/TableBulkActionBar";
 import { TablePagination } from "@/client/components/table/TablePagination";
 import {
-  buildDimensionColumns,
   buildStrikingColumns,
   formatCount,
   formatCtr,
@@ -41,6 +40,7 @@ import {
   type SearchPerformanceDelta,
 } from "./searchPerformanceDeltas";
 import { saveKeywords } from "@/serverFunctions/keywords";
+export { DimensionTable } from "./SearchPerformanceDimensionTable";
 
 export type Tab = "striking" | "queries" | "pages";
 export type ExportTarget = "csv" | "sheets";
@@ -202,47 +202,6 @@ function TotalCard({
         ) : null}
       </div>
     </div>
-  );
-}
-
-export function DimensionTable({
-  rows,
-  keyLabel,
-  emptyMessage = "No data for this period yet. Search Console data trails by a few days.",
-  onClearFilters,
-}: {
-  rows: SearchPerformanceTableRow[];
-  keyLabel: string;
-  emptyMessage?: string;
-  onClearFilters?: () => void;
-}) {
-  const columns = useMemo(() => buildDimensionColumns(keyLabel), [keyLabel]);
-  const table = useAppTable({
-    data: rows,
-    columns,
-    withSorting: true,
-    initialState: { sorting: [{ id: "clicks", desc: true }] },
-  });
-  return (
-    <AppDataTable
-      table={table}
-      className="table table-zebra table-sm"
-      wrapperClassName="overflow-x-auto"
-      empty={
-        <div className="space-y-2 p-6 text-center text-sm text-base-content/60">
-          <p>{emptyMessage}</p>
-          {onClearFilters ? (
-            <button
-              type="button"
-              className="btn btn-ghost btn-xs"
-              onClick={onClearFilters}
-            >
-              Clear device and country
-            </button>
-          ) : null}
-        </div>
-      }
-    />
   );
 }
 
