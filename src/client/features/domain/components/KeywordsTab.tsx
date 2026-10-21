@@ -210,6 +210,21 @@ export function KeywordsTab({
       toast.error("Could not copy data");
     }
   };
+  const handleCopySelectedKeywords = async () => {
+    const selectedRows = rows.filter((row) =>
+      selectedKeywords.has(row.keyword),
+    );
+    try {
+      await copyTextToClipboard(
+        selectedRows.map((row) => row.keyword).join("\n"),
+      );
+      toast.success(
+        `${selectedRows.length} keyword${selectedRows.length !== 1 ? "s" : ""} copied`,
+      );
+    } catch {
+      toast.error("Could not copy keywords");
+    }
+  };
   const handleExportToSheets = () => {
     void exportTableToSheets({
       headers: exportTable.headers,
@@ -255,6 +270,12 @@ export function KeywordsTab({
         onClear={() => setSelectedKeywords(new Set())}
         actions={
           <div className="flex items-center px-1.5">
+            <TableBulkActionButton
+              icon={<Copy className="size-3.5" />}
+              onClick={() => void handleCopySelectedKeywords()}
+            >
+              Copy keywords
+            </TableBulkActionButton>
             <TableBulkActionButton
               icon={<Save className="size-3.5" />}
               onClick={handleSaveKeywords}
