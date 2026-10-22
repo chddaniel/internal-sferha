@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { KeywordResearchRow } from "@/types/keywords";
-import { selectedKeywordResearchExportRows } from "./keywordControllerActions";
+import {
+  selectedKeywordResearchExportRows,
+  selectedKeywordResearchNames,
+} from "./keywordControllerActions";
 
 const rows: KeywordResearchRow[] = [
   {
@@ -36,6 +39,17 @@ describe("selectedKeywordResearchExportRows", () => {
         rows,
         new Set(["trail shoes", "running shoes"]),
       ).map((row) => row[0]),
+    ).toEqual(["running shoes", "trail shoes"]);
+  });
+});
+
+describe("selectedKeywordResearchNames", () => {
+  it("returns selected keywords in result order, including rows hidden by filters", () => {
+    expect(
+      selectedKeywordResearchNames(
+        rows,
+        new Set(["trail shoes", "running shoes"]),
+      ),
     ).toEqual(["running shoes", "trail shoes"]);
   });
 });

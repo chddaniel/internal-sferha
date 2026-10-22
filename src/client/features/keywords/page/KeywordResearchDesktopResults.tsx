@@ -1,5 +1,6 @@
 import {
   ChevronDown,
+  Copy,
   Download,
   FileDown,
   Globe,
@@ -222,6 +223,12 @@ function DesktopTableCard({ controller }: Props) {
         onClear={() => controller.setSelectedRows(new Set())}
         actions={
           <div className="flex items-center px-1.5">
+            <TableBulkActionButton
+              icon={<Copy className="size-3.5" />}
+              onClick={() => void controller.handleCopySelectedKeywords()}
+            >
+              Copy keywords
+            </TableBulkActionButton>
             <TableBulkActionButton
               icon={<Save className="size-3.5" />}
               onClick={controller.handleSaveKeywords}

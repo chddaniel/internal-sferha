@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { toast } from "sonner";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import { buildCsv, type CsvValue, downloadCsv } from "@/client/lib/csv";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
@@ -39,6 +40,15 @@ export function selectedKeywordResearchExportRows(
   return rows
     .filter((row) => selectedRows.has(row.keyword))
     .map(keywordResearchExportRow);
+}
+
+export function selectedKeywordResearchNames(
+  rows: KeywordResearchRow[],
+  selectedRows: Set<string>,
+): string[] {
+  return rows
+    .filter((row) => selectedRows.has(row.keyword))
+    .map((row) => row.keyword);
 }
 
 type SaveExportActionParams = {
@@ -117,6 +127,20 @@ export function useSaveAndExportActions(params: SaveExportActionParams) {
     setShowSaveDialog(true);
   };
 
+  const handleCopySelectedKeywords = async () => {
+    const keywords = selectedKeywordResearchNames(rows, selectedRows);
+    if (keywords.length === 0) return;
+
+    try {
+      await copyTextToClipboard(keywords.join("\n"));
+      toast.success(
+        `${keywords.length} keyword${keywords.length !== 1 ? "s" : ""} copied`,
+      );
+    } catch {
+      toast.error("Could not copy keywords");
+    }
+  };
+
   const confirmSave = () => {
     const metrics = rows
       .filter((row) => selectedRows.has(row.keyword))
@@ -170,7 +194,13 @@ export function useSaveAndExportActions(params: SaveExportActionParams) {
     });
   };
 
-  return { handleSaveKeywords, confirmSave, exportCsv, sheetsExportRows };
+  return {
+    handleSaveKeywords,
+    handleCopySelectedKeywords,
+    confirmSave,
+    exportCsv,
+    sheetsExportRows,
+  };
 }
 
 export function downloadKeywordResearchCsv(rows: CsvValue[][]) {

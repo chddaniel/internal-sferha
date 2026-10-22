@@ -223,15 +223,20 @@ export function useKeywordResearchController(
     [input.sortDir, input.sortField, setSearchParams],
   );
 
-  const { handleSaveKeywords, confirmSave, exportCsv, sheetsExportRows } =
-    useSaveAndExportActions({
-      selectedRows,
-      rows,
-      filteredRows,
-      input,
-      saveKeywordsMutate: saveMutation.mutate,
-      setShowSaveDialog: uiState.setShowSaveDialog,
-    });
+  const {
+    handleSaveKeywords,
+    handleCopySelectedKeywords,
+    confirmSave,
+    exportCsv,
+    sheetsExportRows,
+  } = useSaveAndExportActions({
+    selectedRows,
+    rows,
+    filteredRows,
+    input,
+    saveKeywordsMutate: saveMutation.mutate,
+    setShowSaveDialog: uiState.setShowSaveDialog,
+  });
 
   const handleToggleAllRows = () => {
     toggleAllRows(filteredRows.map((row) => row.keyword));
@@ -254,6 +259,7 @@ export function useKeywordResearchController(
     filteredRows,
     filtersForm,
     handleRowClick,
+    handleCopySelectedKeywords,
     handleSaveKeywords,
     handleSearchSubmit,
     hasSearched,
