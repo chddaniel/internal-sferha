@@ -41,16 +41,16 @@ export function BacklinksExportMenu({
 
   return (
     <div className="dropdown dropdown-end">
-      <div
-        tabIndex={0}
-        role="button"
+      <button
+        type="button"
         className={`btn btn-sm btn-ghost gap-1 ${rows.length === 0 ? "btn-disabled" : ""}`}
         aria-label="Export backlinks table"
+        aria-haspopup="menu"
       >
         <Download className="size-4" />
         Export
         <ChevronDown className="size-3 opacity-60" />
-      </div>
+      </button>
       <ul
         tabIndex={0}
         role="menu"
@@ -103,15 +103,15 @@ export function BacklinksActionsMenu({
 }) {
   return (
     <div className="dropdown dropdown-end">
-      <div
-        tabIndex={0}
-        role="button"
+      <button
+        type="button"
         className="btn btn-sm btn-ghost btn-square"
         aria-label="Backlinks table actions"
+        aria-haspopup="menu"
         title="Backlinks table actions"
       >
         <MoreHorizontal className="size-4" />
-      </div>
+      </button>
       <ul
         tabIndex={0}
         role="menu"
