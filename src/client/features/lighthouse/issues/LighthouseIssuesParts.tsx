@@ -201,11 +201,16 @@ function ExportMenu({
 }) {
   return (
     <div className="dropdown dropdown-end">
-      <div tabIndex={0} role="button" className="btn btn-sm gap-1">
+      <button
+        type="button"
+        className="btn btn-sm gap-1"
+        aria-label="Export Lighthouse issues"
+        aria-haspopup="menu"
+      >
         <Download className="size-4" />
         Export
         <ChevronDown className="size-3 opacity-60" />
-      </div>
+      </button>
       <ul
         tabIndex={0}
         className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-72"

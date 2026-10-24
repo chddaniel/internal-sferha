@@ -17,6 +17,7 @@ vi.mock("@/serverFunctions/lighthouse", () => ({
 }));
 
 import { LighthouseIssuesScreen } from "./LighthouseIssuesScreen";
+import { LighthouseIssuesToolbar } from "./LighthouseIssuesParts";
 
 const renderScreen = () =>
   renderToStaticMarkup(
@@ -89,5 +90,35 @@ describe("LighthouseIssuesScreen load errors", () => {
     expect(markup).toContain('disabled=""');
     expect(markup).toContain(">Retrying…</button>");
     expect(markup).not.toContain("No actionable issues for this category.");
+  });
+});
+
+describe("LighthouseIssuesToolbar", () => {
+  it("renders the export dropdown trigger as a native menu button", () => {
+    const markup = renderToStaticMarkup(
+      createElement(LighthouseIssuesToolbar, {
+        category: "all",
+        categoryCounts: {
+          all: 0,
+          performance: 0,
+          accessibility: 0,
+          "best-practices": 0,
+          seo: 0,
+        },
+        selectedCategoryLabel: "All",
+        isBusy: false,
+        visibleIssues: [],
+        allIssues: [],
+        onCategoryChange: () => {},
+        onCopy: () => {},
+        onExport: () => {},
+        onExportCsv: () => {},
+        onExportSheets: () => {},
+      }),
+    );
+
+    expect(markup).toMatch(
+      /<button[^>]*aria-label="Export Lighthouse issues"[^>]*aria-haspopup="menu"/,
+    );
   });
 });
