@@ -1,7 +1,5 @@
 import {
-  ChevronDown,
   Copy,
-  Download,
   FileDown,
   RotateCcw,
   Save,
@@ -18,6 +16,7 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { SerpAnalysisCard } from "@/client/features/keywords/components";
 import { FilterIntentSelect } from "./keywordResearchFilters";
 import { KeywordResearchDesktopTable } from "./KeywordResearchDesktopTable";
+import { KeywordResearchExportMenu } from "./KeywordResearchExportMenu";
 import {
   KeywordResearchPagination,
   useKeywordResearchPagination,
@@ -158,34 +157,12 @@ function MobileKeywordResults({ controller }: Props) {
           {keywordCountLabel}
         </span>
         <div className="flex-1" />
-        <div className="dropdown dropdown-end">
-          <div
-            tabIndex={0}
-            role="button"
-            className={`btn btn-ghost btn-xs gap-1 ${!canExport ? "btn-disabled" : ""}`}
-            aria-label="Export"
-          >
-            <Download className="size-3.5" />
-            <ChevronDown className="size-3 opacity-60" />
-          </div>
-          <ul
-            tabIndex={0}
-            className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300 rounded-box w-56"
-          >
-            <li>
-              <button onClick={handleExportToSheets} disabled={!canExport}>
-                <Sheet className="size-4" />
-                Export to Sheets
-              </button>
-            </li>
-            <li>
-              <button onClick={controller.exportCsv} disabled={!canExport}>
-                <FileDown className="size-4" />
-                Export CSV
-              </button>
-            </li>
-          </ul>
-        </div>
+        <KeywordResearchExportMenu
+          compact
+          canExport={canExport}
+          onExportToSheets={handleExportToSheets}
+          onExportCsv={controller.exportCsv}
+        />
       </div>
 
       <TableBulkActionBar
