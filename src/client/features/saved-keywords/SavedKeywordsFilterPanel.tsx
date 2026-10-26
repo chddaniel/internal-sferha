@@ -1,5 +1,11 @@
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
+import {
+  KEYWORD_INTENT_ORDER,
+  parseIntentFilter,
+  toggleIntentFilter,
+} from "@/client/features/keywords/keywordResearchTypes";
+import { INTENT_LABELS } from "@/client/features/keywords/components/IntentBadge";
 import type { SavedKeywordsFilterValues } from "./savedKeywordsFilterTypes";
 import type { SavedKeywordsFilterForm } from "./useSavedKeywordsFilters";
 
@@ -75,6 +81,50 @@ export function SavedKeywordsFilterPanel({
           min={0}
           max={100}
         />
+      </div>
+
+      <div
+        role="group"
+        aria-labelledby="saved-keyword-intent-filter-label"
+        className="space-y-2 rounded-lg border border-base-300 bg-base-100 p-2.5"
+      >
+        <p
+          id="saved-keyword-intent-filter-label"
+          className="text-[11px] font-semibold uppercase tracking-wide text-base-content/60"
+        >
+          Intent
+        </p>
+        <form.Field name="intents">
+          {(field) => {
+            const selected = parseIntentFilter(field.state.value);
+            return (
+              <div className="flex flex-wrap gap-1.5">
+                {KEYWORD_INTENT_ORDER.map((intent) => {
+                  const isActive = selected.includes(intent);
+                  return (
+                    <button
+                      key={intent}
+                      type="button"
+                      aria-pressed={isActive}
+                      className={`btn btn-xs ${
+                        isActive
+                          ? "btn-primary"
+                          : "btn-ghost border border-base-300"
+                      }`}
+                      onClick={() =>
+                        field.handleChange(
+                          toggleIntentFilter(field.state.value, intent),
+                        )
+                      }
+                    >
+                      {INTENT_LABELS[intent]}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          }}
+        </form.Field>
       </div>
     </div>
   );

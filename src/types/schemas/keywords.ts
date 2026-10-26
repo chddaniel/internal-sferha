@@ -98,6 +98,18 @@ export const getSavedKeywordsSchema = z.object({
   maxCpc: z.number().nonnegative().nullable().optional(),
   minDifficulty: z.number().int().min(0).max(100).nullable().optional(),
   maxDifficulty: z.number().int().min(0).max(100).nullable().optional(),
+  intents: z
+    .array(
+      z.enum([
+        "informational",
+        "commercial",
+        "transactional",
+        "navigational",
+        "unknown",
+      ]),
+    )
+    .max(5)
+    .optional(),
   tagIds: z.array(z.string().min(1)).max(50).optional(),
   tagNames: z.array(savedKeywordTagSchema).max(50).optional(),
   page: z.number().int().positive().default(1),

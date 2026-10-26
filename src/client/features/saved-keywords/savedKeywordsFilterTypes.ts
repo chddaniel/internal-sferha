@@ -1,3 +1,6 @@
+import { parseIntentFilter } from "@/client/features/keywords/keywordResearchTypes";
+import type { KeywordIntent } from "@/types/keywords";
+
 export type SavedKeywordsFilterValues = {
   include: string;
   exclude: string;
@@ -7,6 +10,7 @@ export type SavedKeywordsFilterValues = {
   maxCpc: string;
   minKd: string;
   maxKd: string;
+  intents: string;
 };
 
 export const EMPTY_SAVED_KEYWORDS_FILTERS: SavedKeywordsFilterValues = {
@@ -18,6 +22,7 @@ export const EMPTY_SAVED_KEYWORDS_FILTERS: SavedKeywordsFilterValues = {
   maxCpc: "",
   minKd: "",
   maxKd: "",
+  intents: "",
 };
 
 export type AppliedSavedKeywordsFilters = {
@@ -29,6 +34,7 @@ export type AppliedSavedKeywordsFilters = {
   maxCpc?: number | null;
   minDifficulty?: number | null;
   maxDifficulty?: number | null;
+  intents?: KeywordIntent[];
 };
 
 function parseTerms(value: string): string[] {
@@ -70,6 +76,7 @@ export function compileSavedKeywordsFilters(
 ): AppliedSavedKeywordsFilters {
   const includeTerms = parseTerms(values.include);
   const excludeTerms = parseTerms(values.exclude);
+  const intents = parseIntentFilter(values.intents);
   return {
     includeTerms: includeTerms.length > 0 ? includeTerms : undefined,
     excludeTerms: excludeTerms.length > 0 ? excludeTerms : undefined,
@@ -79,6 +86,7 @@ export function compileSavedKeywordsFilters(
     maxCpc: toFloatOrUndef(values.maxCpc, { min: 0 }),
     minDifficulty: toIntOrUndef(values.minKd, { min: 0, max: 100 }),
     maxDifficulty: toIntOrUndef(values.maxKd, { min: 0, max: 100 }),
+    intents: intents.length > 0 ? intents : undefined,
   };
 }
 

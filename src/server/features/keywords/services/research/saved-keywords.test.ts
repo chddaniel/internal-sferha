@@ -130,6 +130,7 @@ describe("saved keyword service", () => {
     const result = await getSavedKeywords({
       projectId: "project_1",
       tagIds: ["tag_1"],
+      intents: ["transactional"],
       page: 1,
       pageSize: 50,
       sort: "createdAt",
@@ -139,6 +140,7 @@ describe("saved keyword service", () => {
     expect(mocks.listSavedKeywordsByProject).toHaveBeenCalledWith({
       projectId: "project_1",
       search: undefined,
+      intents: ["transactional"],
       tagIds: ["tag_1"],
       tagNames: undefined,
       page: 1,
@@ -158,6 +160,29 @@ describe("saved keyword service", () => {
         keywordCount: 1,
       },
     ]);
+  });
+
+  it("applies intent filters to full-list exports", async () => {
+    mocks.listSavedKeywordsByProject.mockResolvedValue({
+      totalCount: 0,
+      tags: [],
+      rows: [],
+    });
+    const { exportSavedKeywords } = await import("./saved-keywords");
+
+    await exportSavedKeywords({
+      projectId: "project_1",
+      intents: ["commercial", "unknown"],
+      sort: "createdAt",
+      order: "desc",
+    });
+
+    expect(mocks.listSavedKeywordsByProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: "project_1",
+        intents: ["commercial", "unknown"],
+      }),
+    );
   });
 
   it("updates saved keyword tags through add and remove operations", async () => {

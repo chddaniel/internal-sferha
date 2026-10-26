@@ -6,11 +6,15 @@ import {
   eq,
   gte,
   inArray,
+  isNull,
   lte,
+  notInArray,
+  or,
   sql,
   type SQL,
 } from "drizzle-orm";
 import { db } from "@/db";
+import type { KeywordIntent } from "@/types/keywords";
 import { runBatch } from "@/db/runBatch";
 import {
   keywordMetrics,
@@ -35,6 +39,7 @@ type SavedKeywordsListParams = {
   maxCpc?: number | null;
   minDifficulty?: number | null;
   maxDifficulty?: number | null;
+  intents?: KeywordIntent[];
   tagIds?: string[];
   tagNames?: string[];
   page?: number;
@@ -155,6 +160,7 @@ function buildSavedKeywordWhere(params: {
   maxCpc?: number | null;
   minDifficulty?: number | null;
   maxDifficulty?: number | null;
+  intents?: KeywordIntent[];
   tagIds?: string[];
 }) {
   const clauses: SQL[] = [eq(savedKeywords.projectId, params.projectId)];
@@ -195,6 +201,28 @@ function buildSavedKeywordWhere(params: {
   }
   if (params.maxDifficulty != null) {
     clauses.push(lte(keywordMetrics.keywordDifficulty, params.maxDifficulty));
+  }
+  if (params.intents && params.intents.length > 0) {
+    const selectedKnownIntents = params.intents.filter(
+      (intent) => intent !== "unknown",
+    );
+    const intentClauses: SQL[] = [];
+    if (selectedKnownIntents.length > 0) {
+      intentClauses.push(inArray(keywordMetrics.intent, selectedKnownIntents));
+    }
+    if (params.intents.includes("unknown")) {
+      intentClauses.push(isNull(keywordMetrics.intent));
+      intentClauses.push(
+        notInArray(keywordMetrics.intent, [
+          "informational",
+          "commercial",
+          "transactional",
+          "navigational",
+        ]),
+      );
+    }
+    const intentFilter = or(...intentClauses);
+    if (intentFilter) clauses.push(intentFilter);
   }
   if (params.tagIds && params.tagIds.length > 0) {
     clauses.push(
@@ -260,6 +288,7 @@ async function listSavedKeywordsByProject(
     maxCpc: params.maxCpc,
     minDifficulty: params.minDifficulty,
     maxDifficulty: params.maxDifficulty,
+    intents: params.intents,
     tagIds,
   });
 
