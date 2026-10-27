@@ -8,8 +8,8 @@ import {
   BILLING_ROUTE,
   LOW_CREDITS_THRESHOLD_USD,
   SUBSCRIBE_ROUTE,
-  autumnSeoDataCreditsToUsd,
 } from "@/shared/billing";
+import { getRemainingCreditUsd } from "./freePlanBannerUtils";
 
 export function FreePlanBanner() {
   const { data: session } = useSession();
@@ -26,15 +26,13 @@ export function FreePlanBanner() {
   const planStatus = getCustomerPlanStatus(customerQuery.data);
   const isFreePlan = planStatus === "free";
 
-  const monthlyRemaining = autumnSeoDataCreditsToUsd(
+  const totalRemaining = getRemainingCreditUsd(
     customerQuery.data.balances?.[AUTUMN_SEO_DATA_BALANCE_FEATURE_ID]
-      ?.remaining ?? 0,
-  );
-  const topUpRemaining = autumnSeoDataCreditsToUsd(
+      ?.remaining,
     customerQuery.data.balances?.[AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID]
-      ?.remaining ?? 0,
+      ?.remaining,
   );
-  const totalRemaining = monthlyRemaining + topUpRemaining;
+  if (totalRemaining == null) return null;
 
   const isOutOfCredits = totalRemaining <= 0;
   const isLowCredits =
