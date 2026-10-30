@@ -15,6 +15,10 @@ type Props = {
  */
 const COLLAPSED_MAX_PX = 240;
 
+export function extractAnswerBody(text: string): string {
+  return extractThinkingBlocks(text).body.trim();
+}
+
 /**
  * Render an LLM's markdown answer with explicit per-element Tailwind classes.
  *

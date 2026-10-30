@@ -2,16 +2,22 @@ import { useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  Copy,
   ExternalLink,
   Globe,
   XCircle,
 } from "lucide-react";
-import { MarkdownAnswer } from "@/client/features/ai-search/components/MarkdownAnswer";
+import {
+  extractAnswerBody,
+  MarkdownAnswer,
+} from "@/client/features/ai-search/components/MarkdownAnswer";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import {
   formatModelLabel,
   getModelAccent,
 } from "@/client/features/ai-search/platformLabels";
 import { formatUrlForDisplay } from "@/client/components/table/url";
+import { toast } from "sonner";
 import type {
   PromptExplorerCitation,
   PromptExplorerModelResult,
@@ -67,6 +73,18 @@ function ModelResultCard({
     );
   }
 
+  const answerBody = extractAnswerBody(modelResult.text);
+  const handleCopyResponse = async () => {
+    if (!answerBody) return;
+
+    try {
+      await copyTextToClipboard(answerBody);
+      toast.success(`${formatModelLabel(modelResult.model)} response copied`);
+    } catch {
+      toast.error("Could not copy response");
+    }
+  };
+
   return (
     <article
       className={`overflow-hidden rounded-r-lg border border-base-300 border-l-4 ${accent.border} bg-base-100`}
@@ -79,6 +97,8 @@ function ModelResultCard({
         brandMentioned={modelResult.brandMentioned}
         highlightBrand={highlightBrand}
         status="success"
+        onCopy={() => void handleCopyResponse()}
+        copyDisabled={!answerBody}
       />
 
       <div className="px-5 py-5">
@@ -179,6 +199,8 @@ function ModelHeader({
   brandMentioned,
   highlightBrand,
   status,
+  onCopy,
+  copyDisabled = false,
 }: {
   model: PromptExplorerModelResult["model"];
   modelName: string | null;
@@ -187,6 +209,8 @@ function ModelHeader({
   brandMentioned: boolean | null;
   highlightBrand: string | null;
   status: "success" | "error";
+  onCopy?: () => void;
+  copyDisabled?: boolean;
 }) {
   const accent = getModelAccent(model);
   return (
@@ -211,11 +235,25 @@ function ModelHeader({
           </span>
         ) : null}
       </div>
-      {tokens != null ? (
-        <span className="text-xs tabular-nums text-base-content/50">
-          {tokens.toLocaleString()} tokens
-        </span>
-      ) : null}
+      <div className="flex items-center gap-3">
+        {tokens != null ? (
+          <span className="text-xs tabular-nums text-base-content/50">
+            {tokens.toLocaleString()} tokens
+          </span>
+        ) : null}
+        {onCopy ? (
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs gap-1"
+            onClick={onCopy}
+            disabled={copyDisabled}
+            aria-label={`Copy ${formatModelLabel(model)} response`}
+          >
+            <Copy className="size-3.5" />
+            Copy response
+          </button>
+        ) : null}
+      </div>
     </header>
   );
 }
