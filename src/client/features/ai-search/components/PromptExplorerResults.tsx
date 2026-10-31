@@ -29,8 +29,28 @@ type Props = {
 };
 
 export function PromptExplorerResults({ result }: Props) {
+  const handleCopyComparison = async () => {
+    try {
+      await copyTextToClipboard(formatPromptExplorerComparison(result));
+      toast.success("Prompt comparison copied");
+    } catch {
+      toast.error("Could not copy comparison");
+    }
+  };
+
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          className="btn btn-outline btn-sm gap-2"
+          onClick={() => void handleCopyComparison()}
+          aria-label="Copy Prompt Explorer comparison"
+        >
+          <Copy className="size-3.5" />
+          Copy comparison
+        </button>
+      </div>
       {result.results.map((modelResult) => (
         <ModelResultCard
           key={modelResult.model}
@@ -40,6 +60,45 @@ export function PromptExplorerResults({ result }: Props) {
       ))}
     </div>
   );
+}
+
+export function formatPromptExplorerComparison(
+  result: PromptExplorerResult,
+): string {
+  const prompt = result.prompt
+    .split(/\r?\n/)
+    .map((line) => `> ${line}`)
+    .join("\n");
+  const sections = [
+    "# Prompt Explorer comparison",
+    `**Generated:** ${result.fetchedAt}`,
+    result.highlightBrand
+      ? `**Brand highlighted:** ${result.highlightBrand}`
+      : null,
+    `## Prompt\n\n${prompt}`,
+    ...result.results.map((modelResult) => {
+      const heading = `## ${formatModelLabel(modelResult.model)}`;
+
+      if (modelResult.status === "error") {
+        return `${heading} (error)\n\n${modelResult.message}`;
+      }
+
+      const answer = extractAnswerBody(modelResult.text);
+      const citedSources = modelResult.citations.length
+        ? `\n\n### Cited sources\n\n${modelResult.citations
+            .map(
+              (citation) => `- ${citation.title || "Source"}: ${citation.url}`,
+            )
+            .join("\n")}`
+        : "";
+
+      return `${heading}\n\n${answer || "_Model returned an empty response._"}${citedSources}`;
+    }),
+  ];
+
+  return sections
+    .filter((section): section is string => section !== null)
+    .join("\n\n");
 }
 
 function ModelResultCard({
