@@ -273,6 +273,7 @@ export function DashboardPage({ projectId }: { projectId: string }) {
 
   const activation = activationQuery.data;
   const overview = overviewQuery.data;
+  const overviewUnavailable = overviewQuery.isError && overview === undefined;
 
   // Visit-triggered backlink snapshot: fire once per page view when the
   // overview reports a missing or stale snapshot for a project with a domain.
@@ -334,6 +335,24 @@ export function DashboardPage({ projectId }: { projectId: string }) {
 
         <OnboardingChecklist projectId={projectId} activation={activation} />
 
+        {overviewQuery.isError ? (
+          <div className="flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p role="alert" className="text-base-content/80">
+              {overview === undefined
+                ? "Couldn’t load audit and backlink data. Retry to see your project overview."
+                : "Couldn’t refresh dashboard data. Showing the last loaded metrics."}
+            </p>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm shrink-0"
+              onClick={() => void overviewQuery.refetch()}
+              disabled={overviewQuery.isFetching}
+            >
+              {overviewQuery.isFetching ? "Retrying…" : "Retry"}
+            </button>
+          </div>
+        ) : null}
+
         {/* Every card is half width on large screens (only the checklist spans).
           Cards with data render before setup pitches and empty states. */}
         <div className="grid items-start gap-5 lg:grid-cols-2">
@@ -359,30 +378,35 @@ export function DashboardPage({ projectId }: { projectId: string }) {
               hasData: gscConnected,
               node: <GscCard projectId={projectId} connected={gscConnected} />,
             },
-            {
-              key: "audit",
-              hasData: overview?.audit != null,
-              node: (
-                <AuditHealthCard
-                  projectId={projectId}
-                  audit={overview?.audit ?? null}
-                />
-              ),
-            },
-            ...(showBacklinks
+            ...(!overviewUnavailable
               ? [
                   {
-                    key: "backlinks",
-                    hasData:
-                      overview?.backlinks != null || refreshMutation.isPending,
+                    key: "audit",
+                    hasData: overview?.audit != null,
                     node: (
-                      <BacklinkPulseCard
+                      <AuditHealthCard
                         projectId={projectId}
-                        backlinks={overview?.backlinks ?? null}
-                        refreshing={refreshMutation.isPending}
+                        audit={overview?.audit ?? null}
                       />
                     ),
                   },
+                  ...(showBacklinks
+                    ? [
+                        {
+                          key: "backlinks",
+                          hasData:
+                            overview?.backlinks != null ||
+                            refreshMutation.isPending,
+                          node: (
+                            <BacklinkPulseCard
+                              projectId={projectId}
+                              backlinks={overview?.backlinks ?? null}
+                              refreshing={refreshMutation.isPending}
+                            />
+                          ),
+                        },
+                      ]
+                    : []),
                 ]
               : []),
           ]
