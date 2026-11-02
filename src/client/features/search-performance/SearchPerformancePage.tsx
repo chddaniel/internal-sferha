@@ -7,6 +7,7 @@ import { TableExportMenu } from "@/client/components/table/TableBulkActionBar";
 import { TablePagination } from "@/client/components/table/TablePagination";
 import { SearchConsoleConnectionCard } from "@/client/features/gsc/SearchConsoleConnectionCard";
 import { SearchPerformanceLoadingState } from "@/client/features/search-performance/SearchPerformanceLoadingState";
+import { SearchPerformanceErrorState } from "@/client/features/search-performance/SearchPerformanceErrorState";
 import { canKeepSearchPerformancePlaceholder } from "@/client/features/search-performance/searchPerformanceQueryState";
 import {
   DimensionTable,
@@ -221,11 +222,11 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
         {reportQuery.isPending ? (
           <SearchPerformanceLoadingState />
         ) : reportQuery.isError ? (
-          <div className="alert alert-error">
-            <span className="text-sm">
-              {getStandardErrorMessage(reportQuery.error)}
-            </span>
-          </div>
+          <SearchPerformanceErrorState
+            message={getStandardErrorMessage(reportQuery.error)}
+            isFetching={reportQuery.isFetching}
+            onRetry={() => void reportQuery.refetch()}
+          />
         ) : !report?.connected ? (
           <div className="max-w-2xl">
             <SearchConsoleConnectionCard projectId={projectId} />
@@ -331,11 +332,11 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                 </div>
               ) : tableQuery.isError ? (
                 <div className="p-4">
-                  <div className="alert alert-error">
-                    <span className="text-sm">
-                      {getStandardErrorMessage(tableQuery.error)}
-                    </span>
-                  </div>
+                  <SearchPerformanceErrorState
+                    message={getStandardErrorMessage(tableQuery.error)}
+                    isFetching={tableQuery.isFetching}
+                    onRetry={() => void tableQuery.refetch()}
+                  />
                 </div>
               ) : (
                 <>
