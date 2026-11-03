@@ -119,6 +119,7 @@ export function BacklinksSearchCard({
                     >
                       <Search className="size-4 text-base-content/60" />
                       <input
+                        aria-label="Domain or URL to analyze"
                         placeholder="Enter a domain or URL"
                         value={field.state.value}
                         onChange={(event) => {
@@ -170,12 +171,17 @@ export function BacklinksSearchCard({
               }}
             </form.Subscribe>
 
-            <div className="flex items-center gap-1">
+            <div
+              role="group"
+              aria-label="Backlink search scope"
+              className="flex items-center gap-1"
+            >
               <form.Field name="scope">
                 {(field) => (
                   <>
                     <button
                       type="button"
+                      aria-pressed={field.state.value === "domain"}
                       className={`btn btn-xs ${field.state.value === "domain" ? "btn-soft" : "btn-ghost"}`}
                       onClick={() => {
                         setUserSelectedScope(true);
@@ -186,6 +192,7 @@ export function BacklinksSearchCard({
                     </button>
                     <button
                       type="button"
+                      aria-pressed={field.state.value === "page"}
                       className={`btn btn-xs ${field.state.value === "page" ? "btn-soft" : "btn-ghost"}`}
                       onClick={() => {
                         setUserSelectedScope(true);
