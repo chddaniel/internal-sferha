@@ -47,6 +47,7 @@ export function KeywordResearchSearchBar({ controller }: Props) {
                   <textarea
                     className="grow min-w-0 resize-none bg-transparent text-sm leading-6 outline-none placeholder:text-base-content/40"
                     rows={rows}
+                    aria-label="Keywords to research"
                     placeholder="Enter a keyword"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -120,6 +121,11 @@ export function KeywordResearchSearchBar({ controller }: Props) {
             </button>
           </div>
         </form>
+        <p className="text-xs text-base-content/50">
+          Search up to {MAX_KEYWORDS_PER_SUBMIT} keywords at once: separate them
+          with commas or line breaks (Shift+Enter adds a line). Each keyword
+          opens a separate results tab.
+        </p>
         <controlsForm.Field name="keyword">
           {(field) => {
             const keywordError = getFieldError(field.state.meta.errors);
