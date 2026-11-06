@@ -13,7 +13,11 @@ import {
   HostedPlanGate,
   type HostedPlanGateState,
 } from "@/client/features/billing/HostedPlanGate";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import {
+  getErrorCode,
+  getStandardErrorMessage,
+} from "@/client/lib/error-messages";
+import { BILLING_ROUTE } from "@/shared/billing";
 import { PromptExplorerForm } from "@/client/features/ai-search/components/PromptExplorerForm";
 import { PromptExplorerResults } from "@/client/features/ai-search/components/PromptExplorerResults";
 import { PromptExplorerLoadingState } from "@/client/features/ai-search/components/PromptExplorerLoadingState";
@@ -184,6 +188,8 @@ function PromptExplorerPageInner({
   const errorMessage = exploreQuery.isError
     ? getStandardErrorMessage(exploreQuery.error)
     : null;
+  const hasInsufficientCreditsError =
+    getErrorCode(exploreQuery.error) === "INSUFFICIENT_CREDITS";
   const isLoading = hasActivePrompt && exploreQuery.isPending;
   const resultData = hasActivePrompt ? exploreQuery.data : undefined;
 
@@ -236,7 +242,14 @@ function PromptExplorerPageInner({
                 className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error"
               >
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
-                <span>{errorMessage}</span>
+                <div className="space-y-2">
+                  <p>{errorMessage}</p>
+                  {hasInsufficientCreditsError ? (
+                    <Link to={BILLING_ROUTE} className="btn btn-sm">
+                      Go to Billing
+                    </Link>
+                  ) : null}
+                </div>
               </div>
             ) : null}
 

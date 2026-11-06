@@ -13,7 +13,11 @@ import {
   HostedPlanGate,
   type HostedPlanGateState,
 } from "@/client/features/billing/HostedPlanGate";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import {
+  getErrorCode,
+  getStandardErrorMessage,
+} from "@/client/lib/error-messages";
+import { BILLING_ROUTE } from "@/shared/billing";
 import { BrandLookupResults } from "@/client/features/ai-search/components/BrandLookupResults";
 import { BrandLookupSearchCard } from "@/client/features/ai-search/components/BrandLookupSearchCard";
 import { BrandLookupHistorySection } from "@/client/features/ai-search/components/BrandLookupHistorySection";
@@ -196,6 +200,9 @@ function BrandLookupPageInner({
     hasActiveQuery && lookupQuery.isError
       ? getStandardErrorMessage(lookupQuery.error)
       : null;
+  const hasInsufficientCreditsError =
+    hasActiveQuery &&
+    getErrorCode(lookupQuery.error) === "INSUFFICIENT_CREDITS";
   const resultData = hasActiveQuery ? lookupQuery.data : undefined;
 
   return (
@@ -238,7 +245,14 @@ function BrandLookupPageInner({
                 className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error"
               >
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
-                <span>{errorMessage}</span>
+                <div className="space-y-2">
+                  <p>{errorMessage}</p>
+                  {hasInsufficientCreditsError ? (
+                    <Link to={BILLING_ROUTE} className="btn btn-sm">
+                      Go to Billing
+                    </Link>
+                  ) : null}
+                </div>
               </div>
             ) : null}
 
