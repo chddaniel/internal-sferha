@@ -148,6 +148,8 @@ describe("BacklinkPulseCard freshness", () => {
         projectId: "project-123",
         backlinks: backlinkSummary(true),
         refreshing: false,
+        refreshFailed: false,
+        onRetry: vi.fn(),
       }),
     );
 
@@ -160,9 +162,42 @@ describe("BacklinkPulseCard freshness", () => {
         projectId: "project-123",
         backlinks: backlinkSummary(false),
         refreshing: false,
+        refreshFailed: false,
+        onRetry: vi.fn(),
       }),
     );
 
     expect(markup).not.toContain("over 24 hours old");
+  });
+
+  it("offers a retry when the first snapshot fails", () => {
+    const markup = renderToStaticMarkup(
+      createElement(BacklinkPulseCard, {
+        projectId: "project-123",
+        backlinks: null,
+        refreshing: false,
+        refreshFailed: true,
+        onRetry: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain("Couldn’t take the first backlink snapshot.");
+    expect(markup).toContain(">Retry snapshot</button>");
+  });
+
+  it("preserves the last snapshot and offers retry after a refresh failure", () => {
+    const markup = renderToStaticMarkup(
+      createElement(BacklinkPulseCard, {
+        projectId: "project-123",
+        backlinks: backlinkSummary(true),
+        refreshing: false,
+        refreshFailed: true,
+        onRetry: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain("Refresh failed. Showing the last snapshot.");
+    expect(markup).toContain(">Retry</button>");
+    expect(markup).toContain("120");
   });
 });

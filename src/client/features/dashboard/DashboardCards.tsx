@@ -264,10 +264,14 @@ export function BacklinkPulseCard({
   projectId,
   backlinks,
   refreshing,
+  refreshFailed,
+  onRetry,
 }: {
   projectId: string;
   backlinks: DashboardBacklinkSummary | null;
   refreshing: boolean;
+  refreshFailed: boolean;
+  onRetry: () => void;
 }) {
   if (!backlinks && refreshing) {
     return (
@@ -284,9 +288,25 @@ export function BacklinkPulseCard({
   if (!backlinks) {
     return (
       <CardShell title="Backlink pulse">
-        <p className="text-sm text-base-content/60">
-          We&rsquo;ll snapshot who links to your domain — nothing to set up.
-        </p>
+        {refreshFailed ? (
+          <div className="space-y-3">
+            <p role="alert" className="text-sm text-warning">
+              Couldn&rsquo;t take the first backlink snapshot.
+            </p>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={onRetry}
+              disabled={refreshing}
+            >
+              {refreshing ? "Retrying…" : "Retry snapshot"}
+            </button>
+          </div>
+        ) : (
+          <p className="text-sm text-base-content/60">
+            We&rsquo;ll snapshot who links to your domain — nothing to set up.
+          </p>
+        )}
       </CardShell>
     );
   }
@@ -344,6 +364,22 @@ export function BacklinkPulseCard({
           }
         />
       </div>
+      {refreshFailed ? (
+        <div
+          role="alert"
+          className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-warning"
+        >
+          <span>Refresh failed. Showing the last snapshot.</span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs"
+            onClick={onRetry}
+            disabled={refreshing}
+          >
+            {refreshing ? "Retrying…" : "Retry"}
+          </button>
+        </div>
+      ) : null}
     </CardShell>
   );
 }

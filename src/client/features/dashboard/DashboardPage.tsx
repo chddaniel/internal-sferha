@@ -402,6 +402,8 @@ export function DashboardPage({ projectId }: { projectId: string }) {
                               projectId={projectId}
                               backlinks={overview?.backlinks ?? null}
                               refreshing={refreshMutation.isPending}
+                              refreshFailed={refreshMutation.isError}
+                              onRetry={() => refreshMutation.mutate()}
                             />
                           ),
                         },
