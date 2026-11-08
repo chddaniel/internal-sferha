@@ -1,15 +1,21 @@
 import type { FormEvent } from "react";
 import { AlertCircle, Search } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { getFieldError, getFormError } from "@/client/lib/forms";
 import type { DomainOverviewControlsForm } from "@/client/features/domain/DomainOverviewPage";
 import { toSortMode } from "@/client/features/domain/utils";
 import type { DomainSortMode } from "@/client/features/domain/types";
 import { LABS_LOCATION_OPTIONS } from "@/client/features/keywords/locations";
 import { LocationSelect } from "@/client/components/LocationSelect";
+import { BILLING_ROUTE } from "@/shared/billing";
 
 type Props = {
   controlsForm: DomainOverviewControlsForm;
   isLoading: boolean;
+  queryError: string | null;
+  queryNeedsBilling: boolean;
+  queryRetrying: boolean;
+  onRetry: () => void;
   onSubmit: (event: FormEvent) => void;
   onSortChange: (sort: DomainSortMode) => void;
   onLocationChange: (locationCode: number) => void;
@@ -18,6 +24,10 @@ type Props = {
 export function DomainSearchCard({
   controlsForm,
   isLoading,
+  queryError,
+  queryNeedsBilling,
+  queryRetrying,
+  onRetry,
   onSubmit,
   onSortChange,
   onLocationChange,
@@ -124,6 +134,30 @@ export function DomainSearchCard({
             ) : null;
           }}
         </controlsForm.Subscribe>
+
+        {queryError ? (
+          <div
+            className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error"
+            role="alert"
+          >
+            <AlertCircle className="mt-0.5 size-4 shrink-0" />
+            <span className="min-w-0 flex-1">{queryError}</span>
+            {queryNeedsBilling ? (
+              <Link to={BILLING_ROUTE} className="btn btn-sm shrink-0">
+                Go to Billing
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-sm shrink-0"
+                onClick={onRetry}
+                disabled={queryRetrying}
+              >
+                {queryRetrying ? "Retrying…" : "Retry lookup"}
+              </button>
+            )}
+          </div>
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="label cursor-pointer gap-2 py-0">

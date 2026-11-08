@@ -39,7 +39,10 @@ import {
   shouldValidateFieldOnChange,
 } from "@/client/lib/forms";
 import { buildDomainFiltersClearSearchUpdate } from "@/client/features/domain/domainFilterUtils";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import {
+  getErrorCode,
+  getStandardErrorMessage,
+} from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
 import type { DomainOverviewRouteState } from "@/client/features/domain/domainRouteState";
 import type {
@@ -269,6 +272,12 @@ function useDomainOverviewState({
   });
   const overview = overviewQuery.data ?? null;
   const isLoading = routeState.domain.trim() !== "" && overviewQuery.isLoading;
+  const queryError = overviewQuery.isError
+    ? getStandardErrorMessage(overviewQuery.error, "Lookup failed.")
+    : null;
+  const errorCode = overviewQuery.isError
+    ? getErrorCode(overviewQuery.error)
+    : null;
 
   const controlsForm = useForm({
     defaultValues: {
@@ -318,19 +327,6 @@ function useDomainOverviewState({
     routeState.sort,
     routeState.subdomains,
   ]);
-
-  useEffect(() => {
-    controlsForm.setErrorMap({
-      onSubmit: overviewQuery.error
-        ? createFormValidationErrors({
-            form: getStandardErrorMessage(
-              overviewQuery.error,
-              "Lookup failed.",
-            ),
-          })
-        : undefined,
-    });
-  }, [controlsForm, overviewQuery.error]);
 
   useEffect(() => {
     if (!overviewQuery.isSuccess || !overview) return;
@@ -393,6 +389,11 @@ function useDomainOverviewState({
   return {
     controlsForm,
     isLoading,
+    queryError,
+    queryNeedsBilling:
+      errorCode === "INSUFFICIENT_CREDITS" || errorCode === "PAYMENT_REQUIRED",
+    queryRetrying: overviewQuery.isFetching,
+    retryQuery: () => void overviewQuery.refetch(),
     overview,
     canSaveKeywords,
     history,
@@ -555,6 +556,10 @@ export function DomainOverviewPage({
         <DomainSearchCard
           controlsForm={state.controlsForm}
           isLoading={state.isLoading}
+          queryError={state.queryError}
+          queryNeedsBilling={state.queryNeedsBilling}
+          queryRetrying={state.queryRetrying}
+          onRetry={state.retryQuery}
           onSubmit={handleSearchSubmit}
           onSortChange={(sort) =>
             state.applySort(sort, getDefaultSortOrder(sort))
