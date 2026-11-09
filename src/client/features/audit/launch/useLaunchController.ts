@@ -138,6 +138,9 @@ function useLaunchMutations({
       void historyRefetch();
       toast.success("Audit deleted");
     },
+    onError: (error) => {
+      toast.error(getStandardErrorMessage(error, "Failed to delete audit"));
+    },
   });
 
   return { startMutation, deleteMutation };
