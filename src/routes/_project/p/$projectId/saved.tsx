@@ -11,6 +11,7 @@ import type {
   SortingState,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
+import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { SavedKeywordsBulkActionBar } from "@/client/features/saved-keywords/SavedKeywordsBulkActionBar";
 import { SavedKeywordsBulkTagsModal } from "@/client/features/saved-keywords/SavedKeywordsBulkTagsModal";
@@ -110,15 +111,24 @@ function SavedKeywordsPage() {
     [appliedFilters, order, page, pageSize, projectId, selectedTagIds, sort],
   );
 
-  const { data, isLoading, isFetching } = useQuery({
+  const savedKeywordsQuery = useQuery({
     queryKey: ["savedKeywords", projectId, queryInput],
     queryFn: () => getSavedKeywords({ data: queryInput }),
     placeholderData: keepPreviousData,
   });
 
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error: queryError,
+    refetch,
+  } = savedKeywordsQuery;
   const savedKeywords = data?.rows ?? [];
   const availableTags = data?.tags ?? [];
   const totalCount = data?.totalCount ?? 0;
+  const hasLoadError = isError && data === undefined;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const selectedRows = savedKeywords.filter((row) => rowSelection[row.id]);
   const selectedIds = selectedRows.map((row) => row.id);
@@ -293,34 +303,48 @@ function SavedKeywordsPage() {
             {removeError ? (
               <RemoveSavedKeywordsError message={removeError} />
             ) : null}
-            <SavedKeywordsStatus
-              totalCount={totalCount}
-              isFetching={isFetching && !isLoading}
-            />
-            <SavedKeywordsTable
-              projectId={projectId}
-              rows={savedKeywords}
-              rowSelection={rowSelection}
-              sorting={sorting}
-              isLoading={isLoading}
-              hasActiveFilters={hasActiveFilters}
-              onClearFilters={handleClearAllFilters}
-              onRowSelectionChange={setRowSelection}
-              onSortingChange={handleSortingChange}
-            />
+            {isError ? (
+              <SavedKeywordsLoadError
+                error={queryError}
+                hasLoadedData={!hasLoadError}
+                isRetrying={isFetching}
+                onRetry={() => void refetch()}
+              />
+            ) : null}
+            {!hasLoadError ? (
+              <>
+                <SavedKeywordsStatus
+                  totalCount={totalCount}
+                  isFetching={isFetching && !isLoading}
+                />
+                <SavedKeywordsTable
+                  projectId={projectId}
+                  rows={savedKeywords}
+                  rowSelection={rowSelection}
+                  sorting={sorting}
+                  isLoading={isLoading}
+                  hasActiveFilters={hasActiveFilters}
+                  onClearFilters={handleClearAllFilters}
+                  onRowSelectionChange={setRowSelection}
+                  onSortingChange={handleSortingChange}
+                />
+              </>
+            ) : null}
           </div>
 
-          <SavedKeywordsPagination
-            page={page}
-            pageSize={pageSize}
-            totalCount={totalCount}
-            isLoading={isFetching}
-            onPageChange={setPage}
-            onPageSizeChange={(nextPageSize) => {
-              setPageSize(nextPageSize);
-              setPage(1);
-            }}
-          />
+          {!hasLoadError ? (
+            <SavedKeywordsPagination
+              page={page}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              isLoading={isFetching}
+              onPageChange={setPage}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                setPage(1);
+              }}
+            />
+          ) : null}
         </div>
 
         <SavedKeywordsBulkActionBar
@@ -362,6 +386,40 @@ function SavedKeywordsPage() {
           />
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function SavedKeywordsLoadError({
+  error,
+  hasLoadedData,
+  isRetrying,
+  onRetry,
+}: {
+  error: unknown;
+  hasLoadedData: boolean;
+  isRetrying: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="alert alert-error flex flex-wrap items-center gap-3">
+      <AlertCircle className="size-4 shrink-0" />
+      <span role="alert" className="flex-1">
+        {getStandardErrorMessage(
+          error,
+          hasLoadedData
+            ? "Couldn’t refresh saved keywords. Showing the last loaded list."
+            : "Couldn’t load saved keywords. Retry to see your list.",
+        )}
+      </span>
+      <button
+        type="button"
+        className="btn btn-sm"
+        onClick={onRetry}
+        disabled={isRetrying}
+      >
+        {isRetrying ? "Retrying…" : "Retry"}
+      </button>
     </div>
   );
 }
