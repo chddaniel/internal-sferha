@@ -305,6 +305,7 @@ export function RankTrackingDomainDetail({
           checkBusy={isBusy}
           checkDisabled={isFreePlan}
           hasData={filtered.length > 0}
+          hasTrackedKeywords={(rows?.length ?? 0) > 0}
         />
 
         {/* Filters panel */}

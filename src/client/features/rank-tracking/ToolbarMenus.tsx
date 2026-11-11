@@ -91,14 +91,14 @@ export function MoreMenu({
   checkDisabled,
   onRefreshMetrics,
   metricsRefreshing,
-  hasData,
+  hasTrackedKeywords,
 }: {
   onCheckNow: () => void;
   checkBusy: boolean;
   checkDisabled: boolean;
   onRefreshMetrics: () => void;
   metricsRefreshing: boolean;
-  hasData: boolean;
+  hasTrackedKeywords: boolean;
 }) {
   return (
     <ToolbarMenu
@@ -123,7 +123,7 @@ export function MoreMenu({
         label={metricsRefreshing ? "Refreshing..." : "Update keyword stats"}
         description="Volume, difficulty & CPC — not rankings"
         onClick={onRefreshMetrics}
-        disabled={metricsRefreshing || !hasData}
+        disabled={metricsRefreshing || !hasTrackedKeywords}
       />
     </ToolbarMenu>
   );
