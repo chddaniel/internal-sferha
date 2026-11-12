@@ -213,6 +213,19 @@ export function matchesMetricRangeFilter(
   return value >= min && value <= max;
 }
 
+export function applyPageTwoOpportunityFilter(
+  filters: Filters,
+  device: "desktop" | "mobile",
+): Filters {
+  return {
+    ...filters,
+    minDesktopPos: device === "desktop" ? "11" : "",
+    maxDesktopPos: device === "desktop" ? "20" : "",
+    minMobilePos: device === "mobile" ? "11" : "",
+    maxMobilePos: device === "mobile" ? "20" : "",
+  };
+}
+
 export function countActiveFilters(filters: Filters): number {
   let count = 0;
   if (filters.include) count++;

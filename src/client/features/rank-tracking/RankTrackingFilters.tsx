@@ -1,5 +1,6 @@
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, TrendingUp } from "lucide-react";
 import type { DomainListFilters, Filters } from "./RankTrackingFilters.logic";
+import { applyPageTwoOpportunityFilter } from "./RankTrackingFilters.logic";
 
 export * from "./RankTrackingFilters.logic";
 
@@ -12,11 +13,13 @@ export function FilterPanel({
   filters,
   setFilters,
   activeFilterCount,
+  activeDevice,
   onReset,
 }: {
   filters: Filters;
   setFilters: (f: Filters) => void;
   activeFilterCount: number;
+  activeDevice: "desktop" | "mobile";
   onReset: () => void;
 }) {
   const update = (key: keyof Filters, value: string) =>
@@ -24,7 +27,7 @@ export function FilterPanel({
 
   return (
     <div className="shrink-0 border-b border-base-300 bg-gradient-to-b from-base-100 to-base-200/30 px-4 py-3 space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold">Refine results</p>
           {activeFilterCount > 0 && (
@@ -33,14 +36,28 @@ export function FilterPanel({
             </span>
           )}
         </div>
-        <button
-          className="btn btn-xs btn-ghost gap-1"
-          onClick={onReset}
-          disabled={activeFilterCount === 0}
-        >
-          <RotateCcw className="size-3" />
-          Clear all
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-xs btn-outline gap-1"
+            aria-label={`Filter ${activeDevice} rankings to positions 11 to 20`}
+            title={`Filter ${activeDevice} rankings to positions 11–20`}
+            onClick={() =>
+              setFilters(applyPageTwoOpportunityFilter(filters, activeDevice))
+            }
+          >
+            <TrendingUp className="size-3" />
+            Page 2 · {activeDevice}
+          </button>
+          <button
+            className="btn btn-xs btn-ghost gap-1"
+            onClick={onReset}
+            disabled={activeFilterCount === 0}
+          >
+            <RotateCcw className="size-3" />
+            Clear all
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <div className="space-y-1.5">

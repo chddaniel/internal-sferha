@@ -3,6 +3,7 @@ import type { RankTrackingRow } from "@/types/schemas/rank-tracking";
 import {
   applyDomainListFilters,
   applyFilters,
+  applyPageTwoOpportunityFilter,
   countActiveDomainListFilters,
   EMPTY_DOMAIN_LIST_FILTERS,
   EMPTY_FILTERS,
@@ -115,6 +116,40 @@ describe("applyFilters", () => {
         withFilters({ maxDesktopPos: "0", maxMobilePos: "0" }),
       ).map((row) => row.keyword),
     ).toEqual(["unranked both"]);
+  });
+});
+
+describe("applyPageTwoOpportunityFilter", () => {
+  it("targets page two on the desktop device and preserves other filters", () => {
+    expect(
+      applyPageTwoOpportunityFilter(
+        withFilters({
+          include: "seo",
+          minVolume: "100",
+          minDesktopPos: "3",
+          maxDesktopPos: "8",
+          minMobilePos: "5",
+          maxMobilePos: "10",
+        }),
+        "desktop",
+      ),
+    ).toEqual(
+      withFilters({
+        include: "seo",
+        minVolume: "100",
+        minDesktopPos: "11",
+        maxDesktopPos: "20",
+      }),
+    );
+  });
+
+  it("targets page two on mobile when mobile is active", () => {
+    expect(
+      applyPageTwoOpportunityFilter(
+        withFilters({ minDesktopPos: "1", maxDesktopPos: "10" }),
+        "mobile",
+      ),
+    ).toEqual(withFilters({ minMobilePos: "11", maxMobilePos: "20" }));
   });
 });
 

@@ -314,6 +314,7 @@ export function RankTrackingDomainDetail({
             filters={filters}
             setFilters={setFilters}
             activeFilterCount={activeFilterCount}
+            activeDevice={activeDevice}
             onReset={() => setFilters(EMPTY_FILTERS)}
           />
         )}
