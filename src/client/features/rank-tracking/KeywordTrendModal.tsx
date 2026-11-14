@@ -11,6 +11,7 @@ import type { RankKeywordHistoryPoint } from "@/serverFunctions/rank-tracking";
 import { LOCATIONS } from "@/client/features/keywords/locations";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import { csvChange, DeviceRankCell } from "./RankTrackingTableParts";
+import { HistoryLoadError } from "./RankTrackingTrendError";
 import {
   RankTrendChart,
   TrendRangeToggle,
@@ -51,7 +52,7 @@ export function KeywordTrendModal({
 }) {
   const [sinceDays, setSinceDays] = useState(730);
 
-  const { data: history, isLoading } = useQuery({
+  const historyQuery = useQuery({
     queryKey: [
       "rankKeywordHistory",
       projectId,
@@ -69,6 +70,14 @@ export function KeywordTrendModal({
         },
       }),
   });
+  const {
+    data: history,
+    isLoading,
+    isError,
+    isFetching,
+    error,
+    refetch,
+  } = historyQuery;
 
   const points = useMemo(() => history ?? [], [history]);
   const devices = useMemo(() => deriveDevices(points), [points]);
@@ -141,6 +150,15 @@ export function KeywordTrendModal({
     captureClientEvent("rank_tracking:keyword_trend_export");
   };
 
+  const historyLoadError = isError ? (
+    <HistoryLoadError
+      error={error}
+      hasLoadedData={history !== undefined}
+      isRetrying={isFetching}
+      onRetry={() => void refetch()}
+    />
+  ) : null;
+
   return (
     <Modal
       onClose={onClose}
@@ -163,14 +181,20 @@ export function KeywordTrendModal({
         <TrendRangeToggle value={sinceDays} onChange={setSinceDays} />
       </div>
 
-      {isLoading ? (
+      {isLoading && history === undefined ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="size-5 animate-spin text-base-content/50" />
         </div>
+      ) : isError && history === undefined ? (
+        historyLoadError
       ) : maxPerDevice <= 1 ? (
-        <EmptyState count={maxPerDevice} />
+        <>
+          {historyLoadError}
+          <EmptyState count={maxPerDevice} />
+        </>
       ) : (
         <>
+          {historyLoadError}
           <RankTrendChart
             data={chartData}
             series={series}
