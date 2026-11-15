@@ -341,11 +341,21 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
               ) : (
                 <>
                   <div className="p-4">
+                    {tableQuery.isPlaceholderData ? (
+                      <p
+                        role="status"
+                        className="mb-3 text-xs text-base-content/60"
+                      >
+                        Updating results for the selected filters…
+                      </p>
+                    ) : null}
                     <DimensionTable
                       rows={tableRows}
                       keyLabel={tab === "queries" ? "Query" : "Page"}
                       projectId={projectId}
-                      allowKeywordSave={tab === "queries"}
+                      allowKeywordSave={
+                        tab === "queries" && !tableQuery.isPlaceholderData
+                      }
                       emptyMessage={
                         hasDeviceOrCountryFilter
                           ? `No ${tab} match the selected device and country. Try changing the filters or date range.`
