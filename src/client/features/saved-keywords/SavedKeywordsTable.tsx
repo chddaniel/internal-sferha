@@ -5,6 +5,7 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
+import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import {
   AppDataTable,
@@ -55,7 +56,15 @@ export function SavedKeywordsTable({
           <SortableHeader column={column} label="Keyword" />
         ),
         cell: ({ getValue }) => (
-          <span className="font-medium">{getValue()}</span>
+          <Link
+            to="/p/$projectId/keywords"
+            params={{ projectId }}
+            search={{ q: getValue() }}
+            className="link link-hover font-medium"
+            title="Research this keyword"
+          >
+            {getValue()}
+          </Link>
         ),
       }),
       columnHelper.accessor("searchVolume", {
@@ -119,7 +128,7 @@ export function SavedKeywordsTable({
         ),
       }),
     ],
-    [selectAnchorRef],
+    [projectId, selectAnchorRef],
   );
   const table = useAppTable({
     data: rows,
