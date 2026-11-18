@@ -88,6 +88,14 @@ export const AUDIT_ISSUE_TYPES = {
     howToFix:
       "Add a meta description of roughly 70–160 characters that summarizes the page and gives a reason to click.",
   },
+  "missing-open-graph": {
+    severity: "info",
+    title: "Incomplete social sharing metadata",
+    explanation:
+      "Many social and messaging platforms use Open Graph tags to build link previews. Missing tags can leave shared links with generic or incomplete previews.",
+    howToFix:
+      "Add an og:title, og:description, and og:image tag that describe the page and use an image suitable for sharing.",
+  },
   "missing-h1": {
     severity: "warning",
     title: "Missing H1 heading",

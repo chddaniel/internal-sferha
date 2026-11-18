@@ -99,6 +99,19 @@ export function runPageReporters(page: CrawledPageResult): DetectedIssue[] {
     });
   }
 
+  const missingOpenGraphTags = (
+    [
+      ["og:title", page.ogTitle],
+      ["og:description", page.ogDescription],
+      ["og:image", page.ogImage],
+    ] as const
+  )
+    .filter(([, value]) => !value?.trim())
+    .map(([tag]) => tag);
+  if (missingOpenGraphTags.length > 0) {
+    report("missing-open-graph", { missingTags: missingOpenGraphTags });
+  }
+
   // Headings
   if (page.h1Count === 0) {
     report("missing-h1");

@@ -28,9 +28,9 @@ function makePage(overrides: Partial<CrawledPageResult>): CrawledPageResult {
     robotsMeta: null,
     xRobotsTag: null,
     headerCanonicalUrl: null,
-    ogTitle: null,
-    ogDescription: null,
-    ogImage: null,
+    ogTitle: "A clear page title",
+    ogDescription: "A short summary for a social link preview.",
+    ogImage: "https://example.com/share.jpg",
     h1Count: 1,
     h2Count: 0,
     h3Count: 0,
@@ -114,6 +114,22 @@ describe("runPageReporters", () => {
         (issue) => issue.issueType === "meta-description-too-short",
       )?.details,
     ).toEqual({ length: 69 });
+  });
+
+  it("reports missing Open Graph tags and lists the fields to add", () => {
+    const missing = runPageReporters(
+      makePage({ ogTitle: " ", ogDescription: null, ogImage: null }),
+    ).find((issue) => issue.issueType === "missing-open-graph");
+
+    expect(missing?.details).toEqual({
+      missingTags: ["og:title", "og:description", "og:image"],
+    });
+    expect(
+      issueTypes(makePage({ ogTitle: null, ogDescription: "Summary" })),
+    ).toContain("missing-open-graph");
+    expect(
+      issueTypes(makePage({ ogTitle: null, isHtml: false })),
+    ).not.toContain("missing-open-graph");
   });
 
   it("checks headings", () => {
