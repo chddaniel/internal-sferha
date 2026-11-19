@@ -143,6 +143,16 @@ export function runPageReporters(page: CrawledPageResult): DetectedIssue[] {
   if (effectiveCanonical && effectiveCanonical !== page.url) {
     report("canonicalized-page", { canonicalUrl: effectiveCanonical });
   }
+  if (page.inSitemap) {
+    const sitemapDetails: Record<string, unknown> = {};
+    if (!page.isIndexable) sitemapDetails.noindex = true;
+    if (effectiveCanonical && effectiveCanonical !== page.url) {
+      sitemapDetails.canonicalUrl = effectiveCanonical;
+    }
+    if (Object.keys(sitemapDetails).length > 0) {
+      report("sitemap-indexation-conflict", sitemapDetails);
+    }
+  }
 
   // Content quality
   if (page.isIndexable && page.wordCount < THIN_CONTENT_WORDS) {

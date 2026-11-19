@@ -188,6 +188,30 @@ describe("runPageReporters", () => {
     ).not.toContain("canonicalized-page");
   });
 
+  it("flags sitemap URLs with noindex or a canonical pointing elsewhere", () => {
+    const noindex = runPageReporters(
+      makePage({ isIndexable: false, robotsMeta: "noindex" }),
+    ).find((issue) => issue.issueType === "sitemap-indexation-conflict");
+    expect(noindex?.details).toEqual({ noindex: true });
+
+    const canonicalized = runPageReporters(
+      makePage({ canonicalUrl: "https://example.com/preferred" }),
+    ).find((issue) => issue.issueType === "sitemap-indexation-conflict");
+    expect(canonicalized?.details).toEqual({
+      canonicalUrl: "https://example.com/preferred",
+    });
+
+    expect(
+      issueTypes(
+        makePage({
+          inSitemap: false,
+          isIndexable: false,
+          robotsMeta: "noindex",
+        }),
+      ),
+    ).not.toContain("sitemap-indexation-conflict");
+  });
+
   it("flags thin content only on indexable pages", () => {
     expect(issueTypes(makePage({ wordCount: 50 }))).toContain("thin-content");
     expect(

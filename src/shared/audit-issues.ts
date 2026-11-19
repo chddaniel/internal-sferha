@@ -232,6 +232,14 @@ export const AUDIT_ISSUE_TYPES = {
     howToFix:
       "If this page should rank on its own, set its canonical to itself. Otherwise no action is needed.",
   },
+  "sitemap-indexation-conflict": {
+    severity: "warning",
+    title: "Sitemap URL sends conflicting signals",
+    explanation:
+      "Sitemaps should list the preferred URLs you want search engines to index. A noindex directive or a canonical pointing elsewhere sends conflicting signals.",
+    howToFix:
+      "Remove this URL from the sitemap, or update its indexing and canonical signals so the sitemap URL is the preferred indexable page.",
+  },
   "deep-page": {
     severity: "info",
     title: "Page is deep in the site structure",
