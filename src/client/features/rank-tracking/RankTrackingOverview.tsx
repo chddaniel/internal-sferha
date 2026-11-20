@@ -11,6 +11,8 @@ import {
 } from "recharts";
 import type { TooltipContentProps } from "recharts";
 import { getRankConfigTrend } from "@/serverFunctions/rank-tracking";
+import { HistoryLoadError } from "./RankTrackingTrendError";
+import { getRankConfigTrendViewState } from "./rankConfigTrendViewState";
 import {
   formatDateTick,
   TrendRangeToggle,
@@ -41,7 +43,14 @@ export function RankTrackingOverview({
 }) {
   const [sinceDays, setSinceDays] = useState(730);
 
-  const { data: trend, isLoading: trendLoading } = useQuery({
+  const {
+    data: trend,
+    isLoading: trendLoading,
+    isError: trendError,
+    isFetching: trendFetching,
+    error: trendErrorValue,
+    refetch: refetchTrend,
+  } = useQuery({
     queryKey: ["rankConfigTrend", projectId, configId, device, sinceDays],
     queryFn: () =>
       getRankConfigTrend({
@@ -62,6 +71,12 @@ export function RankTrackingOverview({
   );
 
   const { containerRef, width } = useChartWidth();
+  const trendViewState = getRankConfigTrendViewState({
+    isLoading: trendLoading,
+    isError: trendError,
+    hasData: trend !== undefined,
+    pointCount: chartData.length,
+  });
 
   return (
     <div className="px-4 pt-4 pb-4">
@@ -86,11 +101,20 @@ export function RankTrackingOverview({
           ))}
         </div>
 
-        {trendLoading ? (
+        {trendError ? (
+          <HistoryLoadError
+            error={trendErrorValue}
+            hasLoadedData={trend !== undefined}
+            isRetrying={trendFetching}
+            onRetry={() => void refetchTrend()}
+          />
+        ) : null}
+
+        {trendViewState === "loading" ? (
           <div className="flex items-center justify-center p-8">
             <Loader2 className="size-4 animate-spin text-base-content/50" />
           </div>
-        ) : chartData.length <= 1 ? (
+        ) : trendViewState === "error" ? null : trendViewState === "empty" ? (
           <div className="rounded-lg border border-dashed border-base-300 p-8 text-center text-xs text-base-content/60">
             {chartData.length === 0
               ? "No history yet — run a check to start tracking positions over time."
