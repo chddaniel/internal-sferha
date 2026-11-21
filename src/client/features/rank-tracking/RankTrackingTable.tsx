@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FileDown, Loader2, Sheet, Trash2 } from "lucide-react";
+import { AlertCircle, FileDown, Loader2, Sheet, Trash2 } from "lucide-react";
 import { Modal } from "@/client/components/Modal";
 import {
   AppDataTable,
@@ -19,6 +19,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { removeTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import type { RankTrackingRow } from "@/types/schemas/rank-tracking";
+import { getRankTrackingResultsViewState } from "./rankTrackingResultsViewState";
 import { useRankTrackingColumns } from "./RankTrackingColumns";
 import { buildRankTrackingExport } from "./RankTrackingTableParts";
 import {
@@ -31,6 +32,11 @@ export function RankTrackingTable({
   totalCount,
   rows,
   resultsLoading,
+  resultsError,
+  resultsHasError,
+  resultsHasData,
+  resultsRetrying,
+  onRetryResults,
   showDesktop,
   showMobile,
   defaultSortId,
@@ -44,6 +50,11 @@ export function RankTrackingTable({
   totalCount: number;
   rows: RankTrackingRow[];
   resultsLoading: boolean;
+  resultsError: unknown;
+  resultsHasError: boolean;
+  resultsHasData: boolean;
+  resultsRetrying: boolean;
+  onRetryResults: () => void;
   showDesktop: boolean;
   showMobile: boolean;
   defaultSortId: string;
@@ -94,6 +105,33 @@ export function RankTrackingTable({
   const selectedRows = table.getSelectedRowModel().rows;
   const selectedCount = selectedRows.length;
   const selectedRankRows = selectedRows.map((row) => row.original);
+  const resultsViewState = getRankTrackingResultsViewState({
+    isLoading: resultsLoading,
+    isError: resultsHasError,
+    hasData: resultsHasData,
+    rowCount: rows.length,
+  });
+  const resultsErrorNotice = resultsHasError ? (
+    <div className="alert alert-error flex flex-wrap items-center gap-3">
+      <AlertCircle className="size-4 shrink-0" />
+      <span role="alert" className="flex-1">
+        {getStandardErrorMessage(
+          resultsError,
+          resultsHasData
+            ? "Couldn’t refresh rank results. Showing the last loaded data."
+            : "Couldn’t load rank results. Retry to try again.",
+        )}
+      </span>
+      <button
+        type="button"
+        className="btn btn-sm"
+        onClick={onRetryResults}
+        disabled={resultsRetrying}
+      >
+        {resultsRetrying ? "Retrying…" : "Retry"}
+      </button>
+    </div>
+  ) : null;
 
   const exportSelectionToSheets = () => {
     const { headers, rows: exportRows } = buildRankTrackingExport(
@@ -147,7 +185,7 @@ export function RankTrackingTable({
     },
   });
 
-  if (resultsLoading) {
+  if (resultsViewState === "loading") {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="size-5 animate-spin text-base-content/50" />
@@ -155,18 +193,26 @@ export function RankTrackingTable({
     );
   }
 
-  if (rows.length === 0) {
+  if (resultsViewState === "error") {
+    return <div className="p-4">{resultsErrorNotice}</div>;
+  }
+
+  if (resultsViewState === "empty") {
     return (
-      <div className="rounded-xl border border-dashed border-base-300 p-10 text-center text-sm text-base-content/55">
-        {totalCount === 0
-          ? 'No rank data yet. Click "Check Now" to run your first check.'
-          : "No keywords match your search."}
+      <div className="space-y-3">
+        {resultsErrorNotice}
+        <div className="rounded-xl border border-dashed border-base-300 p-10 text-center text-sm text-base-content/55">
+          {totalCount === 0
+            ? 'No rank data yet. Click "Check Now" to run your first check.'
+            : "No keywords match your search."}
+        </div>
       </div>
     );
   }
 
   return (
     <>
+      {resultsErrorNotice}
       <TableBulkActionBar
         selectedCount={selectedCount}
         onClear={() => table.resetRowSelection()}

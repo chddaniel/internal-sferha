@@ -93,7 +93,14 @@ export function RankTrackingDomainDetail({
   );
   const [viewMode, setViewMode] = useState<"table" | "history">("table");
 
-  const { data: resultsData, isLoading: resultsLoading } = useQuery({
+  const {
+    data: resultsData,
+    isLoading: resultsLoading,
+    isError: resultsError,
+    isFetching: resultsFetching,
+    error: resultsErrorValue,
+    refetch: refetchResults,
+  } = useQuery({
     queryKey: ["rankTrackingResults", projectId, config.id, comparePeriod],
     queryFn: () =>
       getLatestRankResults({
@@ -336,6 +343,11 @@ export function RankTrackingDomainDetail({
               totalCount={rows?.length ?? 0}
               rows={filtered}
               resultsLoading={resultsLoading}
+              resultsError={resultsErrorValue}
+              resultsHasError={resultsError}
+              resultsHasData={resultsData !== undefined}
+              resultsRetrying={resultsFetching}
+              onRetryResults={() => void refetchResults()}
               showDesktop={showDesktop}
               showMobile={showMobile}
               defaultSortId={defaultSortId}
