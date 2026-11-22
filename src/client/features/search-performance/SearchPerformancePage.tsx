@@ -234,6 +234,13 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
         ) : (
           <>
             <TotalsCards report={report} />
+            <p
+              aria-label="Google Search Console data coverage"
+              className="px-1 text-xs text-base-content/55"
+            >
+              Data covers {report.range.startDate} through{" "}
+              {report.range.endDate}. Recent Search Console data may be delayed.
+            </p>
             <div className="overflow-hidden rounded-xl border border-base-300 bg-base-100">
               <div className="flex flex-col gap-3 border-b border-base-300 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
                 <div role="tablist" className="tabs tabs-border w-fit">
