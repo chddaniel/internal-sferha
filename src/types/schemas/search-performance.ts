@@ -16,6 +16,21 @@ export type SearchPerformanceDateRange =
   (typeof SEARCH_PERFORMANCE_RANGES)[number];
 export type SearchPerformanceDevice = (typeof GSC_DEVICES)[number];
 
+export const searchPerformanceSearchSchema = z.object({
+  dateRange: z.enum(SEARCH_PERFORMANCE_RANGES).optional(),
+  device: z.enum(GSC_DEVICES).optional(),
+  country: z
+    .string()
+    .length(3)
+    .transform((value) => value.toLowerCase())
+    .optional(),
+  tab: z.enum(["striking", "queries", "pages"]).optional(),
+});
+
+export type SearchPerformanceSearch = z.infer<
+  typeof searchPerformanceSearchSchema
+>;
+
 // Shared report/table filters. Spread into each request schema so the overview
 // and the paginated table calls always accept the exact same filter surface.
 const searchPerformanceFilterShape = {

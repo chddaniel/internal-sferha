@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, Loader2, Sheet } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { TableExportMenu } from "@/client/components/table/TableBulkActionBar";
 import { TablePagination } from "@/client/components/table/TablePagination";
 import { SearchConsoleConnectionCard } from "@/client/features/gsc/SearchConsoleConnectionCard";
 import { SearchPerformanceLoadingState } from "@/client/features/search-performance/SearchPerformanceLoadingState";
@@ -14,57 +13,29 @@ import {
   exportDimensionRows,
   exportStriking,
   StrikingDistanceTable,
-  TabButton,
   TotalsCards,
   type ExportTarget,
   type Tab,
 } from "@/client/features/search-performance/SearchPerformanceParts";
+import { SearchPerformanceToolbar } from "@/client/features/search-performance/SearchPerformanceToolbar";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { copyTextToClipboard } from "@/client/lib/clipboard";
 import {
   exportSearchPerformanceTable,
   getSearchPerformanceReport,
   getSearchPerformanceTable,
 } from "@/serverFunctions/searchPerformance";
 import {
-  GSC_DEVICES,
   SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
   SEARCH_PERFORMANCE_PAGE_SIZES,
-  SEARCH_PERFORMANCE_RANGES,
   type SearchPerformanceDateRange,
   type SearchPerformanceDevice,
+  type SearchPerformanceSearch,
   type SearchPerformanceTableDimension,
 } from "@/types/schemas/search-performance";
 
-const RANGE_LABELS: Record<SearchPerformanceDateRange, string> = {
-  last_7_days: "Last 7 days",
-  last_28_days: "Last 28 days",
-  last_3_months: "Last 3 months",
-};
-const RANGE_OPTIONS = SEARCH_PERFORMANCE_RANGES.map((value) => ({
-  value,
-  label: RANGE_LABELS[value],
-}));
-
-const DEVICE_LABELS: Record<SearchPerformanceDevice, string> = {
-  DESKTOP: "Desktop",
-  MOBILE: "Mobile",
-  TABLET: "Tablet",
-};
-const DEVICE_OPTIONS = GSC_DEVICES.map((value) => ({
-  value,
-  label: DEVICE_LABELS[value],
-}));
-
 // Sentinel for "no filter" in the selects; never sent to the server.
 const ALL = "ALL";
-
-function isDateRange(value: string): value is SearchPerformanceDateRange {
-  return SEARCH_PERFORMANCE_RANGES.some((option) => option === value);
-}
-
-function isDevice(value: string): value is SearchPerformanceDevice {
-  return GSC_DEVICES.some((option) => option === value);
-}
 
 function tabDimension(tab: Tab): SearchPerformanceTableDimension {
   return tab === "pages" ? "page" : "query";
@@ -114,19 +85,35 @@ function tableQueryOptions(
   });
 }
 
-export function SearchPerformancePage({ projectId }: { projectId: string }) {
+export function SearchPerformancePage({
+  projectId,
+  search,
+  onSearchChange,
+}: {
+  projectId: string;
+  search: SearchPerformanceSearch;
+  onSearchChange: (updates: Partial<SearchPerformanceSearch>) => void;
+}) {
   const queryClient = useQueryClient();
-  const [range, setRange] =
-    useState<SearchPerformanceDateRange>("last_28_days");
-  const [device, setDevice] = useState<SearchPerformanceDevice | typeof ALL>(
-    ALL,
+  const [range, setRange] = useState<SearchPerformanceDateRange>(
+    search.dateRange ?? "last_28_days",
   );
-  const [country, setCountry] = useState<string>(ALL);
-  const [tab, setTab] = useState<Tab>("striking");
+  const [device, setDevice] = useState<SearchPerformanceDevice | typeof ALL>(
+    search.device ?? ALL,
+  );
+  const [country, setCountry] = useState<string>(search.country ?? ALL);
+  const [tab, setTab] = useState<Tab>(search.tab ?? "striking");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(
     SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
   );
+
+  useEffect(() => {
+    setRange(search.dateRange ?? "last_28_days");
+    setDevice(search.device ?? ALL);
+    setCountry(search.country ?? ALL);
+    setTab(search.tab ?? "striking");
+  }, [search.dateRange, search.device, search.country, search.tab]);
 
   // Any change to the query set (tab, filters, page size) restarts at page 1.
   useEffect(() => {
@@ -196,6 +183,15 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
     }
   };
 
+  const handleCopyReportLink = async () => {
+    try {
+      await copyTextToClipboard(window.location.href);
+      toast.success("Report link copied");
+    } catch (error) {
+      toast.error(getStandardErrorMessage(error, "Could not copy report link"));
+    }
+  };
+
   return (
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-4">
@@ -242,91 +238,32 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
               {report.range.endDate}. Recent Search Console data may be delayed.
             </p>
             <div className="overflow-hidden rounded-xl border border-base-300 bg-base-100">
-              <div className="flex flex-col gap-3 border-b border-base-300 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-                <div role="tablist" className="tabs tabs-border w-fit">
-                  <TabButton
-                    active={tab === "striking"}
-                    onClick={() => setTab("striking")}
-                    label={`Striking distance (${report.strikingDistance.length})`}
-                  />
-                  <TabButton
-                    active={tab === "queries"}
-                    onClick={() => setTab("queries")}
-                    label="Queries"
-                  />
-                  <TabButton
-                    active={tab === "pages"}
-                    onClick={() => setTab("pages")}
-                    label="Pages"
-                  />
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {reportQuery.isFetching && !reportQuery.isPending ? (
-                    <Loader2 className="size-4 animate-spin text-base-content/40" />
-                  ) : null}
-                  <select
-                    className="select select-bordered select-sm w-36"
-                    value={device}
-                    onChange={(event) => {
-                      setDevice(
-                        isDevice(event.target.value) ? event.target.value : ALL,
-                      );
-                    }}
-                    aria-label="Device filter"
-                  >
-                    <option value={ALL}>All devices</option>
-                    {DEVICE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="select select-bordered select-sm w-36"
-                    value={country}
-                    onChange={(event) => setCountry(event.target.value)}
-                    aria-label="Country filter"
-                  >
-                    <option value={ALL}>All countries</option>
-                    {report.countries.map((row) => (
-                      <option key={row.key} value={row.key}>
-                        {row.key.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="select select-bordered select-sm w-36"
-                    value={range}
-                    onChange={(event) => {
-                      if (isDateRange(event.target.value)) {
-                        setRange(event.target.value);
-                      }
-                    }}
-                    aria-label="Date range"
-                  >
-                    {RANGE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <TableExportMenu
-                    buttonClassName="btn btn-ghost btn-sm gap-1"
-                    actions={[
-                      {
-                        label: "Export to Sheets",
-                        icon: <Sheet className="size-4" />,
-                        onClick: () => void handleExport("sheets"),
-                      },
-                      {
-                        label: "Download CSV",
-                        icon: <Download className="size-4" />,
-                        onClick: () => void handleExport("csv"),
-                      },
-                    ]}
-                  />
-                </div>
-              </div>
+              <SearchPerformanceToolbar
+                report={report}
+                tab={tab}
+                range={range}
+                device={device}
+                country={country}
+                isFetching={reportQuery.isFetching && !reportQuery.isPending}
+                onTabChange={(value) => {
+                  setTab(value);
+                  onSearchChange({ tab: value });
+                }}
+                onRangeChange={(value) => {
+                  setRange(value);
+                  onSearchChange({ dateRange: value });
+                }}
+                onDeviceChange={(value) => {
+                  setDevice(value ?? ALL);
+                  onSearchChange({ device: value });
+                }}
+                onCountryChange={(value) => {
+                  setCountry(value ?? ALL);
+                  onSearchChange({ country: value });
+                }}
+                onExport={(target) => void handleExport(target)}
+                onShare={() => void handleCopyReportLink()}
+              />
 
               {tab === "striking" ? (
                 <StrikingDistanceTable
@@ -373,6 +310,10 @@ export function SearchPerformancePage({ projectId }: { projectId: string }) {
                           ? () => {
                               setDevice(ALL);
                               setCountry(ALL);
+                              onSearchChange({
+                                device: undefined,
+                                country: undefined,
+                              });
                             }
                           : undefined
                       }
