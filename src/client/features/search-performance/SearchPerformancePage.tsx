@@ -103,9 +103,9 @@ export function SearchPerformancePage({
   );
   const [country, setCountry] = useState<string>(search.country ?? ALL);
   const [tab, setTab] = useState<Tab>(search.tab ?? "striking");
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(search.page ?? 1);
   const [pageSize, setPageSize] = useState<number>(
-    SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
+    search.pageSize ?? SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
   );
 
   useEffect(() => {
@@ -113,12 +113,16 @@ export function SearchPerformancePage({
     setDevice(search.device ?? ALL);
     setCountry(search.country ?? ALL);
     setTab(search.tab ?? "striking");
-  }, [search.dateRange, search.device, search.country, search.tab]);
-
-  // Any change to the query set (tab, filters, page size) restarts at page 1.
-  useEffect(() => {
-    setPage(1);
-  }, [tab, range, device, country, pageSize]);
+    setPage(search.page ?? 1);
+    setPageSize(search.pageSize ?? SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE);
+  }, [
+    search.dateRange,
+    search.device,
+    search.country,
+    search.tab,
+    search.page,
+    search.pageSize,
+  ]);
 
   const filterInput = buildFilterInput(range, device, country);
 
@@ -247,19 +251,23 @@ export function SearchPerformancePage({
                 isFetching={reportQuery.isFetching && !reportQuery.isPending}
                 onTabChange={(value) => {
                   setTab(value);
-                  onSearchChange({ tab: value });
+                  setPage(1);
+                  onSearchChange({ tab: value, page: 1 });
                 }}
                 onRangeChange={(value) => {
                   setRange(value);
-                  onSearchChange({ dateRange: value });
+                  setPage(1);
+                  onSearchChange({ dateRange: value, page: 1 });
                 }}
                 onDeviceChange={(value) => {
                   setDevice(value ?? ALL);
-                  onSearchChange({ device: value });
+                  setPage(1);
+                  onSearchChange({ device: value, page: 1 });
                 }}
                 onCountryChange={(value) => {
                   setCountry(value ?? ALL);
-                  onSearchChange({ country: value });
+                  setPage(1);
+                  onSearchChange({ country: value, page: 1 });
                 }}
                 onExport={(target) => void handleExport(target)}
                 onShare={() => void handleCopyReportLink()}
@@ -313,7 +321,9 @@ export function SearchPerformancePage({
                               onSearchChange({
                                 device: undefined,
                                 country: undefined,
+                                page: 1,
                               });
+                              setPage(1);
                             }
                           : undefined
                       }
@@ -326,8 +336,15 @@ export function SearchPerformancePage({
                     totalCount={null}
                     hasNextPage={hasNextPage}
                     isLoading={tableQuery.isFetching}
-                    onPageChange={setPage}
-                    onPageSizeChange={setPageSize}
+                    onPageChange={(value) => {
+                      setPage(value);
+                      onSearchChange({ page: value });
+                    }}
+                    onPageSizeChange={(value) => {
+                      setPageSize(value);
+                      setPage(1);
+                      onSearchChange({ page: 1, pageSize: value });
+                    }}
                   />
                 </>
               )}

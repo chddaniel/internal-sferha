@@ -11,6 +11,8 @@ export const SEARCH_PERFORMANCE_RANGES = [
 
 /** Device values exactly as the GSC `device` dimension returns/accepts them. */
 export const GSC_DEVICES = ["DESKTOP", "MOBILE", "TABLET"] as const;
+export const SEARCH_PERFORMANCE_PAGE_SIZES = [25, 50, 100] as const;
+export const SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE = 25;
 
 export type SearchPerformanceDateRange =
   (typeof SEARCH_PERFORMANCE_RANGES)[number];
@@ -25,6 +27,15 @@ export const searchPerformanceSearchSchema = z.object({
     .transform((value) => value.toLowerCase())
     .optional(),
   tab: z.enum(["striking", "queries", "pages"]).optional(),
+  page: z.coerce.number().int().positive().optional().catch(undefined),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .refine((value) =>
+      (SEARCH_PERFORMANCE_PAGE_SIZES as readonly number[]).includes(value),
+    )
+    .optional()
+    .catch(undefined),
 });
 
 export type SearchPerformanceSearch = z.infer<
@@ -54,9 +65,6 @@ export const searchPerformanceInputSchema = z.object(
 export const SEARCH_PERFORMANCE_TABLE_DIMENSIONS = ["query", "page"] as const;
 export type SearchPerformanceTableDimension =
   (typeof SEARCH_PERFORMANCE_TABLE_DIMENSIONS)[number];
-
-export const SEARCH_PERFORMANCE_PAGE_SIZES = [25, 50, 100] as const;
-export const SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE = 25;
 
 export const searchPerformanceTableInputSchema = z.object({
   ...searchPerformanceFilterShape,

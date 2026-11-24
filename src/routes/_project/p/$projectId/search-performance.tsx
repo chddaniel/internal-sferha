@@ -4,11 +4,16 @@ import {
   useNavigate,
 } from "@tanstack/react-router";
 import { SearchPerformancePage } from "@/client/features/search-performance/SearchPerformancePage";
-import { searchPerformanceSearchSchema } from "@/types/schemas/search-performance";
+import {
+  SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
+  searchPerformanceSearchSchema,
+} from "@/types/schemas/search-performance";
 
 const DEFAULT_SEARCH = {
   dateRange: "last_28_days",
   tab: "striking",
+  page: 1,
+  pageSize: SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
 } as const;
 
 export const Route = createFileRoute(
