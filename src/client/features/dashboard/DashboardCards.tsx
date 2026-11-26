@@ -146,6 +146,10 @@ export function GscCard({
               />
             }
           />
+          <p className="col-span-2 text-xs text-base-content/55">
+            Search Console data covers {report.range.startDate} through{" "}
+            {report.range.endDate}. Recent data may be delayed.
+          </p>
         </div>
       ) : null}
     </CardShell>

@@ -31,6 +31,7 @@ import type {
   DashboardAuditSummary,
   DashboardBacklinkSummary,
 } from "@/server/features/dashboard/services/DashboardService";
+import type { Report } from "@/client/features/search-performance/SearchPerformanceColumns";
 
 function auditSummary(
   status: DashboardAuditSummary["status"],
@@ -97,6 +98,38 @@ describe("GscCard report errors", () => {
 
     expect(markup).toContain('disabled=""');
     expect(markup).toContain(">Retrying…</button>");
+  });
+
+  it("shows the exact data coverage and freshness note when connected", () => {
+    const report: Report = {
+      connected: true,
+      range: {
+        startDate: "2026-10-01",
+        endDate: "2026-10-28",
+        prevStartDate: "2026-09-03",
+        prevEndDate: "2026-09-30",
+      },
+      totals: { clicks: 12, impressions: 120, ctr: 0.1, position: 4.2 },
+      prevTotals: { clicks: 10, impressions: 100, ctr: 0.1, position: 5.1 },
+      strikingDistance: [],
+      countries: [],
+    };
+    mockUseQuery.mockReturnValue({
+      data: report,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    const markup = renderToStaticMarkup(
+      createElement(GscCard, { projectId: "project-123", connected: true }),
+    );
+
+    expect(markup).toContain(
+      "Search Console data covers 2026-10-01 through 2026-10-28.",
+    );
+    expect(markup).toContain("Recent data may be delayed.");
   });
 });
 
