@@ -36,6 +36,7 @@ export const searchPerformanceSearchSchema = z.object({
     )
     .optional()
     .catch(undefined),
+  q: z.string().trim().max(200).optional().catch(undefined),
 });
 
 export type SearchPerformanceSearch = z.infer<
@@ -69,6 +70,7 @@ export type SearchPerformanceTableDimension =
 export const searchPerformanceTableInputSchema = z.object({
   ...searchPerformanceFilterShape,
   dimension: z.enum(SEARCH_PERFORMANCE_TABLE_DIMENSIONS),
+  q: z.string().trim().max(200).optional(),
   page: z.number().int().positive().default(1),
   pageSize: z
     .number()
@@ -83,4 +85,5 @@ export const searchPerformanceTableInputSchema = z.object({
 export const searchPerformanceTableExportInputSchema = z.object({
   ...searchPerformanceFilterShape,
   dimension: z.enum(SEARCH_PERFORMANCE_TABLE_DIMENSIONS),
+  q: z.string().trim().max(200).optional(),
 });

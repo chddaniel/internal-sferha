@@ -24,6 +24,7 @@ export function DimensionTable({
   projectId,
   allowKeywordSave = false,
   emptyMessage = "No data for this period yet. Search Console data trails by a few days.",
+  clearFiltersLabel = "Clear device and country",
   onClearFilters,
 }: {
   rows: SearchPerformanceTableRow[];
@@ -31,6 +32,7 @@ export function DimensionTable({
   projectId: string;
   allowKeywordSave?: boolean;
   emptyMessage?: string;
+  clearFiltersLabel?: string;
   onClearFilters?: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -130,7 +132,7 @@ export function DimensionTable({
                 className="btn btn-ghost btn-xs"
                 onClick={onClearFilters}
               >
-                Clear device and country
+                {clearFiltersLabel}
               </button>
             ) : null}
           </div>

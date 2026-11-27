@@ -39,11 +39,13 @@ export function SearchPerformanceToolbar({
   range,
   device,
   country,
+  queryText,
   isFetching,
   onTabChange,
   onRangeChange,
   onDeviceChange,
   onCountryChange,
+  onQueryChange,
   onExport,
   onShare,
 }: {
@@ -52,11 +54,13 @@ export function SearchPerformanceToolbar({
   range: SearchPerformanceDateRange;
   device: SearchPerformanceDevice | typeof ALL;
   country: string;
+  queryText: string;
   isFetching: boolean;
   onTabChange: (tab: Tab) => void;
   onRangeChange: (range: SearchPerformanceDateRange) => void;
   onDeviceChange: (device: SearchPerformanceDevice | undefined) => void;
   onCountryChange: (country: string | undefined) => void;
+  onQueryChange: (query: string) => void;
   onExport: (target: ExportTarget) => void;
   onShare: () => void;
 }) {
@@ -133,6 +137,19 @@ export function SearchPerformanceToolbar({
             </option>
           ))}
         </select>
+        {tab === "queries" || tab === "pages" ? (
+          <input
+            type="search"
+            className="input input-bordered input-sm w-44"
+            value={queryText}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder={
+              tab === "queries" ? "Filter queries…" : "Filter pages…"
+            }
+            aria-label={tab === "queries" ? "Filter queries" : "Filter pages"}
+            maxLength={200}
+          />
+        ) : null}
         <TableExportMenu
           buttonClassName="btn btn-ghost btn-sm gap-1"
           actions={[

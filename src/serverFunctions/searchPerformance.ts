@@ -4,10 +4,8 @@ import {
   GscService,
   isExpectedGrantFailure,
 } from "@/server/features/gsc/services/GscService";
-import {
-  resolveDateRange,
-  type GscPerformanceFilter,
-} from "@/server/features/gsc/searchAnalytics";
+import { resolveDateRange } from "@/server/features/gsc/searchAnalytics";
+import { buildSearchPerformanceFilters } from "@/server/features/gsc/searchPerformanceFilters";
 import {
   buildStrikingDistanceRows,
   previousPeriod,
@@ -29,25 +27,6 @@ const COUNTRY_ROW_LIMIT = 25;
 // Export pulls the whole dimension in one shot, capped at GSC's per-call max
 // (GSC_MAX_ROW_LIMIT). Large stores get everything up to this ceiling.
 const EXPORT_ROW_LIMIT = 1000;
-
-/** Build GSC filter groups shared by every call. Device applies everywhere;
- *  country applies everywhere except the country breakdown itself (so the
- *  dropdown keeps every option visible while one country is selected). */
-function buildGscFilters(data: { device?: string; country?: string }): {
-  deviceFilters: GscPerformanceFilter[];
-  filters: GscPerformanceFilter[];
-} {
-  const deviceFilters: GscPerformanceFilter[] = data.device
-    ? [{ dimension: "device", operator: "equals", expression: data.device }]
-    : [];
-  const filters: GscPerformanceFilter[] = data.country
-    ? [
-        ...deviceFilters,
-        { dimension: "country", operator: "equals", expression: data.country },
-      ]
-    : deviceFilters;
-  return { deviceFilters, filters };
-}
 
 /** Not connected, or a dead/denied grant (token failure or 401/403): the page
  *  renders the connect card. Other statuses (429, 5xx) are real faults. */
@@ -71,7 +50,7 @@ export const getSearchPerformanceReport = createServerFn({ method: "POST" })
     });
     const prev = previousPeriod(startDate, endDate);
     const projectId = context.projectId;
-    const { deviceFilters, filters } = buildGscFilters(data);
+    const { deviceFilters, filters } = buildSearchPerformanceFilters(data);
 
     try {
       const [current, previous, queryPages, countries] = await Promise.all([
@@ -142,7 +121,7 @@ export const getSearchPerformanceTable = createServerFn({ method: "POST" })
     const { startDate, endDate } = resolveDateRange({
       dateRange: data.dateRange,
     });
-    const { filters } = buildGscFilters(data);
+    const { filters } = buildSearchPerformanceFilters(data);
     const offset = (data.page - 1) * data.pageSize;
 
     try {
@@ -188,7 +167,7 @@ export const exportSearchPerformanceTable = createServerFn({ method: "POST" })
     const { startDate, endDate } = resolveDateRange({
       dateRange: data.dateRange,
     });
-    const { filters } = buildGscFilters(data);
+    const { filters } = buildSearchPerformanceFilters(data);
 
     const result = await GscService.getPerformance({
       projectId: context.projectId,

@@ -62,13 +62,21 @@ function buildFilterInput(
 
 // Single source for the paginated table query, shared by the live query and the
 // warm-on-connect prefetch so their key + fn can never drift apart.
-function tableQueryOptions(
-  projectId: string,
-  dimension: SearchPerformanceTableDimension,
-  page: number,
-  pageSize: number,
-  filterInput: FilterInput,
-) {
+function tableQueryOptions({
+  projectId,
+  dimension,
+  page,
+  pageSize,
+  filterInput,
+  query,
+}: {
+  projectId: string;
+  dimension: SearchPerformanceTableDimension;
+  page: number;
+  pageSize: number;
+  filterInput: FilterInput;
+  query: string | undefined;
+}) {
   return queryOptions({
     queryKey: [
       "searchPerformanceTable",
@@ -77,10 +85,18 @@ function tableQueryOptions(
       page,
       pageSize,
       filterInput,
+      query,
     ],
     queryFn: () =>
       getSearchPerformanceTable({
-        data: { projectId, dimension, page, pageSize, ...filterInput },
+        data: {
+          projectId,
+          dimension,
+          page,
+          pageSize,
+          ...filterInput,
+          ...(query ? { q: query } : {}),
+        },
       }),
   });
 }
@@ -103,6 +119,7 @@ export function SearchPerformancePage({
   );
   const [country, setCountry] = useState<string>(search.country ?? ALL);
   const [tab, setTab] = useState<Tab>(search.tab ?? "striking");
+  const [queryText, setQueryText] = useState(search.q ?? "");
   const [page, setPage] = useState(search.page ?? 1);
   const [pageSize, setPageSize] = useState<number>(
     search.pageSize ?? SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
@@ -113,6 +130,7 @@ export function SearchPerformancePage({
     setDevice(search.device ?? ALL);
     setCountry(search.country ?? ALL);
     setTab(search.tab ?? "striking");
+    setQueryText(search.q ?? "");
     setPage(search.page ?? 1);
     setPageSize(search.pageSize ?? SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE);
   }, [
@@ -120,9 +138,20 @@ export function SearchPerformancePage({
     search.device,
     search.country,
     search.tab,
+    search.q,
     search.page,
     search.pageSize,
   ]);
+
+  useEffect(() => {
+    const query = queryText.trim();
+    if (query === (search.q ?? "")) return;
+    const timeout = window.setTimeout(() => {
+      setPage(1);
+      onSearchChange({ q: query || undefined, page: 1 });
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [queryText, search.q, onSearchChange]);
 
   const filterInput = buildFilterInput(range, device, country);
 
@@ -140,7 +169,14 @@ export function SearchPerformancePage({
   const isTableTab = tab === "queries" || tab === "pages";
   const dimension = tabDimension(tab);
   const tableQuery = useQuery({
-    ...tableQueryOptions(projectId, dimension, page, pageSize, filterInput),
+    ...tableQueryOptions({
+      projectId,
+      dimension,
+      page,
+      pageSize,
+      filterInput,
+      query: search.q,
+    }),
     enabled: report?.connected === true && isTableTab,
     placeholderData: (previousData, previousQuery) =>
       canKeepSearchPerformancePlaceholder(
@@ -161,15 +197,25 @@ export function SearchPerformancePage({
   useEffect(() => {
     if (report?.connected !== true) return;
     void queryClient.prefetchQuery(
-      tableQueryOptions(
+      tableQueryOptions({
         projectId,
-        "query",
-        1,
-        SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
-        buildFilterInput(range, device, country),
-      ),
+        dimension: "query",
+        page: 1,
+        pageSize: SEARCH_PERFORMANCE_DEFAULT_PAGE_SIZE,
+        filterInput: buildFilterInput(range, device, country),
+        query: tab === "queries" ? search.q : undefined,
+      }),
     );
-  }, [report?.connected, projectId, range, device, country, queryClient]);
+  }, [
+    report?.connected,
+    projectId,
+    range,
+    device,
+    country,
+    tab,
+    search.q,
+    queryClient,
+  ]);
 
   const handleExport = async (target: ExportTarget) => {
     if (!report?.connected) return;
@@ -179,7 +225,12 @@ export function SearchPerformancePage({
         return;
       }
       const data = await exportSearchPerformanceTable({
-        data: { projectId, dimension, ...filterInput },
+        data: {
+          projectId,
+          dimension,
+          ...filterInput,
+          ...(search.q ? { q: search.q } : {}),
+        },
       });
       exportDimensionRows(dimension, data.rows, report.range, target);
     } catch (error) {
@@ -189,7 +240,12 @@ export function SearchPerformancePage({
 
   const handleCopyReportLink = async () => {
     try {
-      await copyTextToClipboard(window.location.href);
+      const url = new URL(window.location.href);
+      const query = queryText.trim();
+      if (query) url.searchParams.set("q", query);
+      else url.searchParams.delete("q");
+      if (query !== (search.q ?? "")) url.searchParams.set("page", "1");
+      await copyTextToClipboard(url.href);
       toast.success("Report link copied");
     } catch (error) {
       toast.error(getStandardErrorMessage(error, "Could not copy report link"));
@@ -248,11 +304,13 @@ export function SearchPerformancePage({
                 range={range}
                 device={device}
                 country={country}
+                queryText={queryText}
                 isFetching={reportQuery.isFetching && !reportQuery.isPending}
                 onTabChange={(value) => {
                   setTab(value);
+                  setQueryText("");
                   setPage(1);
-                  onSearchChange({ tab: value, page: 1 });
+                  onSearchChange({ tab: value, q: undefined, page: 1 });
                 }}
                 onRangeChange={(value) => {
                   setRange(value);
@@ -269,6 +327,7 @@ export function SearchPerformancePage({
                   setPage(1);
                   onSearchChange({ country: value, page: 1 });
                 }}
+                onQueryChange={setQueryText}
                 onExport={(target) => void handleExport(target)}
                 onShare={() => void handleCopyReportLink()}
               />
@@ -309,18 +368,23 @@ export function SearchPerformancePage({
                         tab === "queries" && !tableQuery.isPlaceholderData
                       }
                       emptyMessage={
-                        hasDeviceOrCountryFilter
-                          ? `No ${tab} match the selected device and country. Try changing the filters or date range.`
-                          : undefined
+                        search.q
+                          ? `No ${tab} contain “${search.q}”. Try a different search or clear the filters.`
+                          : hasDeviceOrCountryFilter
+                            ? `No ${tab} match the selected device and country. Try changing the filters or date range.`
+                            : undefined
                       }
+                      clearFiltersLabel="Clear search and filters"
                       onClearFilters={
-                        hasDeviceOrCountryFilter
+                        hasDeviceOrCountryFilter || Boolean(search.q)
                           ? () => {
                               setDevice(ALL);
                               setCountry(ALL);
+                              setQueryText("");
                               onSearchChange({
                                 device: undefined,
                                 country: undefined,
+                                q: undefined,
                                 page: 1,
                               });
                               setPage(1);
