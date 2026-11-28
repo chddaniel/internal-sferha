@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { DashboardActivation } from "@/server/features/dashboard/services/DashboardService";
-import { computeNextStep, isStepDone, STEP_ORDER } from "./dashboardSteps";
+import {
+  computeNextStep,
+  countCompletedSteps,
+  isStepDone,
+  STEP_ORDER,
+} from "./dashboardSteps";
 
 function activation(
   overrides: Partial<DashboardActivation> = {},
@@ -21,24 +26,31 @@ function activation(
 
 describe("dashboard onboarding steps", () => {
   it("puts the first audit immediately after the domain step", () => {
-    expect(STEP_ORDER).toEqual([
-      "domain",
-      "audit",
-      "mcp",
-      "gsc",
-      "competitor",
-    ]);
+    expect(STEP_ORDER).toEqual(["domain", "audit", "mcp", "gsc", "competitor"]);
   });
 
   it("treats an existing audit as completed", () => {
-    expect(
-      isStepDone(activation({ audit: { started: true } }), "audit"),
-    ).toBe(true);
+    expect(isStepDone(activation({ audit: { started: true } }), "audit")).toBe(
+      true,
+    );
   });
 
   it("coaches a user with a domain to run an audit next", () => {
     expect(computeNextStep(activation({ domain: "example.com" }))).toBe(
       "audit",
     );
+  });
+
+  it("counts completed setup steps from the underlying project state", () => {
+    expect(countCompletedSteps(activation())).toBe(0);
+    expect(
+      countCompletedSteps(
+        activation({
+          domain: "example.com",
+          audit: { started: true },
+          gsc: { connected: true, siteUrl: "https://example.com/" },
+        }),
+      ),
+    ).toBe(3);
   });
 });

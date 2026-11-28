@@ -34,6 +34,10 @@ export function isStepDone(
   }
 }
 
+export function countCompletedSteps(activation: DashboardActivation): number {
+  return STEP_ORDER.filter((step) => isStepDone(activation, step)).length;
+}
+
 /** The single step the hero should coach next; null = coaching is over. */
 export function computeNextStep(
   activation: DashboardActivation,

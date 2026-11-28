@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
   computeNextStep,
+  countCompletedSteps,
   isStepDone,
   STEP_ORDER,
 } from "@/client/features/dashboard/dashboardSteps";
@@ -14,6 +15,7 @@ import {
   BacklinkPulseCard,
   GscCard,
 } from "@/client/features/dashboard/DashboardCards";
+import { DashboardChecklistProgress } from "@/client/features/dashboard/DashboardChecklistProgress";
 import { McpConnectCard } from "@/client/features/dashboard/McpConnectCard";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import type { DashboardActivation } from "@/server/features/dashboard/services/DashboardService";
@@ -116,6 +118,7 @@ function OnboardingChecklist({
   const nextStep = computeNextStep(activation);
   if (!nextStep) return null;
 
+  const completedCount = countCompletedSteps(activation);
   const index = viewedIndex ?? STEP_ORDER.indexOf(nextStep);
   const step = STEP_ORDER[index];
   const copy = HERO_COPY[step];
@@ -174,7 +177,7 @@ function OnboardingChecklist({
             <ChevronLeft className="size-4" />
           </button>
           <span className="text-xs tabular-nums text-base-content/60">
-            {index + 1} / {STEP_ORDER.length}
+            Step {index + 1} of {STEP_ORDER.length}
           </span>
           <button
             type="button"
@@ -189,6 +192,10 @@ function OnboardingChecklist({
           </button>
         </div>
       </div>
+      <DashboardChecklistProgress
+        completedCount={completedCount}
+        totalSteps={STEP_ORDER.length}
+      />
       <div className="flex flex-row flex-wrap items-center justify-between gap-4 p-5 pt-2">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold">{copy.title}</h2>
